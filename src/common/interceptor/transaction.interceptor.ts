@@ -13,7 +13,7 @@ export class TransactionInterceptor implements NestInterceptor {
 
   async intercept(
     context: ExecutionContext,
-    next: CallHandler,
+    next: CallHandler<any>,
   ): Promise<Observable<any>> {
     const req = context.switchToHttp().getRequest();
 

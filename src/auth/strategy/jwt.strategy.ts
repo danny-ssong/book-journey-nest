@@ -5,6 +5,8 @@ import { AuthGuard, PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt } from 'passport-jwt';
 import { envVariableKeys } from 'src/common/const/env.const';
 import { cookieNames } from 'src/common/const/const';
+import { Request } from 'express';
+import { JwtPayload } from '../jwt-payload.interface';
 
 export class JwtAuthGuard extends AuthGuard('jwt') {}
 
@@ -13,7 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(private readonly configService: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        (req) => req.cookies[cookieNames.accessTokenCookieName],
+        (req: Request) => req.cookies[cookieNames.accessTokenCookieName],
       ]),
       ignoreExpiration: false,
       secretOrKey: configService.get<string>(
@@ -22,7 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  validate(payload: any) {
+  validate(payload: JwtPayload) {
     return payload;
   }
 }

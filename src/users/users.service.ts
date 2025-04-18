@@ -1,4 +1,8 @@
-import { Injectable, UseInterceptors } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -6,6 +10,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { QueryRunner } from 'typeorm';
 import { Profile } from 'src/profiles/entities/profile.entity';
+import * as bcrypt from 'bcrypt';
+import { envVariableKeys } from 'src/common/const/env.const';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
@@ -13,6 +20,7 @@ export class UsersService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private dataSource: DataSource,
+    private readonly configService: ConfigService,
   ) {}
 
   async create(createUserDto: CreateUserDto, queryRunner: QueryRunner) {
@@ -78,6 +86,39 @@ export class UsersService {
     return `${adjectives[Math.floor(Math.random() * adjectives.length)]}-${
       nouns[Math.floor(Math.random() * nouns.length)]
     }`;
+  }
+
+  async findUserWithRefreshToken(userId: number, refreshToken: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user)
+      throw new NotFoundException(
+        `유저를 찾을 수 없습니다. token에 서명된 user id${userId}`,
+      );
+
+    const isRefreshTokenMatched = await bcrypt.compare(
+      refreshToken,
+      user.refreshToken,
+    );
+
+    if (!isRefreshTokenMatched)
+      throw new UnauthorizedException(
+        '서명된 토큰과 리프레시 토큰이 일치하지 않습니다.',
+      );
+
+    return user;
+  }
+
+  async setRefreshToken(userId: number, refreshToken: string) {
+    const hashRounds = this.configService.get<number>(
+      envVariableKeys.hashRounds,
+    );
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, hashRounds!);
+    await this.userRepository.update(userId, {
+      refreshToken: hashedRefreshToken,
+    });
   }
 
   findAll() {

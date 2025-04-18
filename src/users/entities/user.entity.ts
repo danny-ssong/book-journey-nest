@@ -30,4 +30,9 @@ export class User extends BaseTable {
 
   @Column()
   thirdPartyId: string;
+
+  @Column({
+    nullable: true,
+  })
+  refreshToken: string;
 }

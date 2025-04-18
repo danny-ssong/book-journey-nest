@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { GoogleAuthGuard } from './strategy/google.strategy';
-import { ConfigService } from '@nestjs/config';
 import { JwtRefreshTokenGuard } from './strategy/jwt-refresh.strategy';
 import {
   accessTokenMaxAge,
@@ -49,6 +48,20 @@ export class AuthController {
   @Post('access-token/refresh')
   @UseGuards(JwtRefreshTokenGuard)
   async refresh(@Req() req, @Res() res: Response) {
+    const accessToken = await this.authService.issueAccessToken(req.user);
+
+    res.cookie('access_token', accessToken, {
+      ...cookieOptions,
+      maxAge: accessTokenMaxAge,
+    });
+
+    return res.send();
+  }
+
+  //for test
+  @Get('access-token/refresh')
+  @UseGuards(JwtRefreshTokenGuard)
+  async refresh1(@Req() req, @Res() res: Response) {
     const accessToken = await this.authService.issueAccessToken(req.user);
 
     res.cookie('access_token', accessToken, {
