@@ -1,5 +1,12 @@
 import { Book } from 'src/books/entities/book.entity';
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Profile } from 'src/profiles/entities/profile.entity';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  ManyToMany,
+} from 'typeorm';
 
 @Entity()
 export class Author {
@@ -11,4 +18,7 @@ export class Author {
 
   @OneToMany(() => Book, (book) => book.author)
   books: Book[];
+
+  @ManyToMany(() => Profile, (profile) => profile.mostReadAuthors)
+  readers: Profile[];
 }

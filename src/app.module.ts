@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -9,6 +14,9 @@ import { ProfilesModule } from './profiles/profiles.module';
 import { PostModule } from './post/post.module';
 import { AuthorsModule } from './authors/authors.module';
 import { BooksModule } from './books/books.module';
+import { AccessTokenAuthMiddleware } from './auth/middleware/access-token-auth.middleware';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './auth/guard/auth.gaurd';
 
 @Module({
   imports: [
@@ -55,6 +63,17 @@ import { BooksModule } from './books/books.module';
     BooksModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [{ provide: APP_GUARD, useClass: AuthGuard }],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AccessTokenAuthMiddleware)
+      .exclude(
+        { path: 'auth/google', method: RequestMethod.GET },
+        { path: 'auth/google/callback', method: RequestMethod.GET },
+        { path: 'auth/access-token/refresh', method: RequestMethod.POST },
+      )
+      .forRoutes('*');
+  }
+}

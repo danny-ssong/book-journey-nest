@@ -1,7 +1,14 @@
 import { Book } from 'src/books/entities/book.entity';
+import { Min, Max } from 'class-validator';
 import { BaseTable } from 'src/common/entities/base-table.entity';
 import { User } from 'src/users/entities/user.entity';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  DeleteDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class Post extends BaseTable {
@@ -14,13 +21,9 @@ export class Post extends BaseTable {
   @Column({ nullable: true })
   content: string;
 
-  @ManyToOne(() => User, (user) => user.posts)
-  user: User;
-
-  @ManyToOne(() => Book, (book) => book.posts)
-  book: Book;
-
-  @Column()
+  @Column({ type: 'integer' })
+  @Min(0)
+  @Max(5)
   rating: number;
 
   @Column()
@@ -31,4 +34,13 @@ export class Post extends BaseTable {
 
   @Column()
   isPrivate: boolean;
+
+  @DeleteDateColumn()
+  deletedAt: Date;
+
+  @ManyToOne(() => User, (user) => user.posts, { nullable: false })
+  user: User;
+
+  @ManyToOne(() => Book, (book) => book.posts)
+  book: Book;
 }

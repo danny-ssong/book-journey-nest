@@ -12,5 +12,6 @@ import { JwtRefreshStrategy } from './strategy/jwt-refresh.strategy';
   imports: [ConfigModule, JwtModule.register({}), UsersModule],
   controllers: [AuthController],
   providers: [AuthService, GoogleStrategy, JwtStrategy, JwtRefreshStrategy],
+  exports: [JwtModule],
 })
 export class AuthModule {}

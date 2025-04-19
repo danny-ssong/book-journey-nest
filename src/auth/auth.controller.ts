@@ -8,6 +8,8 @@ import {
   refreshTokenMaxAge,
 } from 'src/common/const/const';
 import { Response } from 'express';
+import { Public } from './decorator/public.decorator';
+import { UserId } from 'src/common/decorator/user-id.decorator';
 
 const cookieOptions = {
   httpOnly: true,
@@ -21,10 +23,12 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Get('google')
+  @Public()
   @UseGuards(GoogleAuthGuard)
   async googleAuth() {}
 
   @Get('google/callback')
+  @Public()
   @UseGuards(GoogleAuthGuard)
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const { accessToken, refreshToken } = await this.authService.login(
@@ -46,10 +50,13 @@ export class AuthController {
   }
 
   @Post('access-token/refresh')
+  @Public()
   @UseGuards(JwtRefreshTokenGuard)
   async refresh(@Req() req, @Res() res: Response) {
-    const accessToken = await this.authService.issueAccessToken(req.user);
-
+    const accessToken = await this.authService.issueAccessToken({
+      id: req.user.sub,
+      email: req.user.email,
+    });
     res.cookie('access_token', accessToken, {
       ...cookieOptions,
       maxAge: accessTokenMaxAge,
@@ -62,7 +69,10 @@ export class AuthController {
   @Get('access-token/refresh')
   @UseGuards(JwtRefreshTokenGuard)
   async refresh1(@Req() req, @Res() res: Response) {
-    const accessToken = await this.authService.issueAccessToken(req.user);
+    const accessToken = await this.authService.issueAccessToken({
+      id: req.user.sub,
+      email: req.user.email,
+    });
 
     res.cookie('access_token', accessToken, {
       ...cookieOptions,
@@ -73,7 +83,8 @@ export class AuthController {
   }
 
   @Post('logout')
-  logout(@Req() req, @Res() res: Response) {
+  async logout(@UserId() userId: number, @Res() res: Response) {
+    await this.authService.clearRefreshToken(userId);
     res.clearCookie(cookieNames.accessTokenCookieName);
     res.clearCookie(cookieNames.refreshTokenCookieName);
     return res.send();

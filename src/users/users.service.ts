@@ -10,8 +10,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { QueryRunner } from 'typeorm';
 import { Profile } from 'src/profiles/entities/profile.entity';
-import * as bcrypt from 'bcrypt';
-import { envVariableKeys } from 'src/common/const/env.const';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -98,10 +96,7 @@ export class UsersService {
         `유저를 찾을 수 없습니다. token에 서명된 user id${userId}`,
       );
 
-    const isRefreshTokenMatched = await bcrypt.compare(
-      refreshToken,
-      user.refreshToken,
-    );
+    const isRefreshTokenMatched = user.refreshToken === refreshToken;
 
     if (!isRefreshTokenMatched)
       throw new UnauthorizedException(
@@ -111,13 +106,15 @@ export class UsersService {
     return user;
   }
 
-  async setRefreshToken(userId: number, refreshToken: string) {
-    const hashRounds = this.configService.get<number>(
-      envVariableKeys.hashRounds,
-    );
-    const hashedRefreshToken = await bcrypt.hash(refreshToken, hashRounds!);
+  async saveRefreshToken(userId: number, refreshToken: string) {
     await this.userRepository.update(userId, {
-      refreshToken: hashedRefreshToken,
+      refreshToken,
+    });
+  }
+
+  async clearRefreshToken(userId: number) {
+    await this.userRepository.update(userId, {
+      refreshToken: null,
     });
   }
 

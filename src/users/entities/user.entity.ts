@@ -15,13 +15,6 @@ export class User extends BaseTable {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => Profile, (profile) => profile.user)
-  @JoinColumn()
-  profile: Profile;
-
-  @OneToMany(() => Post, (post) => post.user)
-  posts: Post[];
-
   @Column()
   email: string;
 
@@ -33,6 +26,14 @@ export class User extends BaseTable {
 
   @Column({
     nullable: true,
+    type: 'text',
   })
-  refreshToken: string;
+  refreshToken: string | null;
+
+  @OneToOne(() => Profile, (profile) => profile.user)
+  @JoinColumn()
+  profile: Profile;
+
+  @OneToMany(() => Post, (post) => post.user)
+  posts: Post[];
 }

@@ -28,7 +28,7 @@ export class Profile extends BaseTable {
   @OneToOne(() => User, (user) => user.profile)
   user: User;
 
-  @ManyToMany(() => Author)
+  @ManyToMany(() => Author, (author) => author.readers)
   @JoinTable()
   mostReadAuthors: Author[];
 }
