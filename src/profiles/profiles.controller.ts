@@ -5,12 +5,11 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
   UseGuards,
-  Req,
 } from '@nestjs/common';
 import { ProfilesService } from './profiles.service';
-import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from 'src/auth/strategy/jwt.strategy';
+import { UserId } from 'src/common/decorator/user-id.decorator';
 
 @Controller('profiles')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -19,7 +18,7 @@ export class ProfilesController {
 
   @Patch('me')
   @UseGuards(JwtAuthGuard)
-  update(@Req() req, @Body() updateProfileDto: UpdateProfileDto) {
-    return this.profilesService.update(req.user.sub, updateProfileDto);
+  update(@UserId() userId: number, @Body() updateProfileDto: UpdateProfileDto) {
+    return this.profilesService.update(userId, updateProfileDto);
   }
 }

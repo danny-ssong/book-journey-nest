@@ -73,6 +73,9 @@ export class AppModule implements NestModule {
         { path: 'auth/google', method: RequestMethod.GET },
         { path: 'auth/google/callback', method: RequestMethod.GET },
         { path: 'auth/access-token/refresh', method: RequestMethod.POST },
+        { path: 'books/search', method: RequestMethod.GET },
+        { path: 'books/:isbn', method: RequestMethod.GET },
+        { path: 'posts/book/:isbn', method: RequestMethod.GET },
       )
       .forRoutes('*');
   }

@@ -11,7 +11,7 @@ import { Response } from 'express';
 import { Public } from './decorator/public.decorator';
 import { UserId } from 'src/common/decorator/user-id.decorator';
 
-const cookieOptions = {
+export const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'prod' ? true : false,
   sameSite: 'lax' as 'lax' | 'strict' | 'none',
@@ -32,7 +32,7 @@ export class AuthController {
   @UseGuards(GoogleAuthGuard)
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const { accessToken, refreshToken } = await this.authService.login(
-      req.user,
+      req.user as { id: number; email: string },
     );
 
     // 쿠키에 토큰 저장

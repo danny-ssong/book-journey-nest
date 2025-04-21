@@ -61,6 +61,12 @@ export class PostController {
     return this.postService.findUserPosts(userId, getPostsDto);
   }
 
+  @Get('book/:isbn')
+  @Public()
+  findBookPosts(@Param('isbn') isbn: string) {
+    return this.postService.findBookPosts(isbn);
+  }
+
   @Get(':id')
   @Public()
   findOne(@UserId() userId: number, @Param('id', ParseIntPipe) id: number) {

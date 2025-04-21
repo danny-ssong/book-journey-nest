@@ -142,6 +142,22 @@ export class PostService {
       .execute();
   }
 
+  async findBookPosts(isbn: string) {
+    const book = await this.bookRepository.findOne({ where: { isbn } });
+    if (!book)
+      throw new NotFoundException(`Book by isbn not found isbn:${isbn}`);
+
+    return this.bookRepository
+      .createQueryBuilder('book')
+      .leftJoinAndSelect('book.posts', 'post')
+      .leftJoin('post.user', 'user')
+      .addSelect('user.id')
+      .leftJoinAndSelect('user.profile', 'profile')
+      .leftJoinAndSelect('book.author', 'author')
+      .where('book.isbn = :isbn', { isbn })
+      .getMany();
+  }
+
   async findUserPosts(userId: number, getPostsDto: GetPostsDto) {
     const qb = this.getUserPosts(userId);
 

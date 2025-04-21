@@ -18,6 +18,7 @@ import { JwtAuthGuard } from 'src/auth/strategy/jwt.strategy';
 import { TransactionInterceptor } from 'src/common/interceptor/transaction.interceptor';
 import { QueryRunner as QR } from 'typeorm';
 import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
+import { UserId } from 'src/common/decorator/user-id.decorator';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -52,8 +53,7 @@ export class UsersController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  getMe(@Req() req) {
-    const userId = req?.user?.sub;
+  getMe(@UserId() userId: number) {
     return this.usersService.findOne(userId);
   }
 }
