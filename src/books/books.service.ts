@@ -7,6 +7,7 @@ import { Book } from './entities/book.entity';
 import { SearchBookDto } from './dto/search-book.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Author } from 'src/authors/entities/author.entity';
 
 export interface SearchedBook {
   authors: string[];
@@ -17,7 +18,7 @@ export interface SearchedBook {
   publisher: string;
   sale_price: number;
   status: string;
-  thumbnail: string; //url
+  thumbnail: string;
   title: string;
   translators: string[];
   url: string;
@@ -31,28 +32,19 @@ export interface SearchBookedMeta {
 
 @Injectable()
 export class BooksService {
-  constructor(
-    @InjectRepository(Book)
-    private readonly booksRepository: Repository<Book>,
-  ) {}
+  constructor() {}
 
   async findOne(isbn: string) {
-    let book: Book | SearchedBook | null = null;
-
-    book = await this.booksRepository.findOne({
-      where: { isbn },
+    const searchResult = await this.searchBooks({
+      queryString: isbn,
+      size: 1,
+      page: 1,
     });
-    if (!book) {
-      const searchResult = await this.searchBooks({
-        queryString: isbn,
-        size: 5,
-        page: 1,
-      });
-      book = searchResult.documents[0];
-    }
+    const book = searchResult.documents[0];
     if (!book) throw new NotFoundException('Book not found');
 
-    return book;
+    const booksUsingIsbn13 = this.selectPreferredIsbn([book]);
+    return booksUsingIsbn13?.[0];
   }
 
   async searchBooks(searchBookDto: SearchBookDto) {
@@ -67,18 +59,13 @@ export class BooksService {
           Authorization: `KakaoAK ${process.env.KAKAO_API_KEY}`,
         },
       });
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
+      if (!response.ok) throw new Error();
       const data = (await response.json()) as {
         documents: SearchedBook[];
         meta: SearchBookedMeta;
       };
-
       const uniqueBooks = this.removeDuplicatedBooks(data.documents);
-      const booksUsingIsbn13 = this.removeIsbn10(uniqueBooks);
+      const booksUsingIsbn13 = this.selectPreferredIsbn(uniqueBooks);
 
       return {
         ...data,
@@ -93,7 +80,7 @@ export class BooksService {
     const uniqueBookIdentifiers = new Set();
 
     const uniqueBooks = books.filter((book: SearchedBook) => {
-      const identifiler = `${book.title}-${book.authors[0]}-${book.translators[0]}`;
+      const identifiler = `${book.title}-${book.authors?.[0]}-${book.translators?.[0]}`;
       if (uniqueBookIdentifiers.has(identifiler)) return false;
 
       uniqueBookIdentifiers.add(identifiler);
@@ -103,12 +90,15 @@ export class BooksService {
     return uniqueBooks;
   }
 
-  private removeIsbn10(books: SearchedBook[]) {
-    // isbn
-    // ISBN10(10자리) 또는 ISBN13(13자리) 형식의 국제 표준 도서번호(International Standard Book Number)
-    // ISBN10 또는 ISBN13 중 하나 이상 포함
-    // 두 값이 모두 제공될 경우 공백(' ')으로 구분
-    // 따라서 isbn13만 추출하여 book의 primary key로 사용
+  /**
+   * ISBN10(10자리) 또는 ISBN13(13자리) 형식의 국제 표준 도서번호(International Standard Book Number)
+   * ISBN10 또는 ISBN13 중 하나 이상 포함
+   * 두 값이 모두 제공될 경우 공백(' ')으로 구분하여 ISBN13만을 사용하도록 변경
+   *
+   * @param searchedBooks - 검색된 책 리스트
+   * @returns ISBN10, ISBN13이 모두 포함된 경우 ISBN13만을 사용하는 책 리스트
+   */
+  private selectPreferredIsbn(books: SearchedBook[]) {
     const removedIsbn10Books = books.map((book: SearchedBook) => {
       const { isbn } = book;
       const [isbn10, isbn13] = isbn.split(' ');

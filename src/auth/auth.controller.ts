@@ -65,23 +65,6 @@ export class AuthController {
     return res.send();
   }
 
-  //for test
-  @Get('access-token/refresh')
-  @UseGuards(JwtRefreshTokenGuard)
-  async refresh1(@Req() req, @Res() res: Response) {
-    const accessToken = await this.authService.issueAccessToken({
-      id: req.user.sub,
-      email: req.user.email,
-    });
-
-    res.cookie('access_token', accessToken, {
-      ...cookieOptions,
-      maxAge: accessTokenMaxAge,
-    });
-
-    return res.send();
-  }
-
   @Post('logout')
   async logout(@UserId() userId: number, @Res() res: Response) {
     await this.authService.clearRefreshToken(userId);

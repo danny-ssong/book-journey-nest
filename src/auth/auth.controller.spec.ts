@@ -1,7 +1,12 @@
+import { Response } from 'express';
 import { AuthController, cookieOptions } from './auth.controller';
 import { AuthService } from './auth.service';
 import { TestBed } from '@automock/jest';
-import { accessTokenMaxAge, refreshTokenMaxAge } from 'src/common/const/const';
+import {
+  accessTokenMaxAge,
+  cookieNames,
+  refreshTokenMaxAge,
+} from 'src/common/const/const';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -23,11 +28,11 @@ describe('AuthController', () => {
   });
 
   describe('googleAuthRedirect', () => {
-    it('should call authService.login and return res accessToken and refreshToken in cookies', async () => {
+    it('should call authService.login, send accessToken and refreshToken in cookies, and redirect to /', async () => {
       const mockReq = { user: { id: 1, email: 'test@test.com' } };
       const mockRes = {
         cookie: jest.fn().mockReturnThis(),
-        redirect: jest.fn().mockReturnThis(),
+        redirect: jest.fn(),
       };
 
       jest.spyOn(authService, 'login').mockResolvedValue({
@@ -35,7 +40,10 @@ describe('AuthController', () => {
         refreshToken: 'refreshToken',
       });
 
-      await authController.googleAuthRedirect(mockReq, mockRes);
+      await authController.googleAuthRedirect(
+        mockReq,
+        mockRes as unknown as Response,
+      );
 
       expect(authService.login).toHaveBeenCalledWith(mockReq.user);
       expect(mockRes.cookie).toHaveBeenCalledWith(
@@ -55,6 +63,59 @@ describe('AuthController', () => {
         },
       );
       expect(mockRes.redirect).toHaveBeenCalledWith('/');
+    });
+  });
+
+  describe('refresh', () => {
+    it('should call authService.issueAccessToken and return res accessToken in cookies', async () => {
+      const mockReq = { user: { sub: 1, email: 'test@test.com' } };
+      const mockRes = {
+        cookie: jest.fn().mockReturnThis(),
+        send: jest.fn(),
+      };
+
+      jest
+        .spyOn(authService, 'issueAccessToken')
+        .mockResolvedValue('accessToken');
+
+      await authController.refresh(mockReq, mockRes as unknown as Response);
+
+      expect(authService.issueAccessToken).toHaveBeenCalledWith({
+        id: mockReq.user.sub,
+        email: mockReq.user.email,
+      });
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        'access_token',
+        'accessToken',
+        {
+          ...cookieOptions,
+          maxAge: accessTokenMaxAge,
+        },
+      );
+
+      expect(mockRes.send).toHaveBeenCalled();
+    });
+  });
+
+  describe('logout', () => {
+    it('should call authService.clearRefreshToken and clear cookies', async () => {
+      const userId = 1;
+      const mockRes = {
+        clearCookie: jest.fn().mockReturnThis(),
+        send: jest.fn(),
+      };
+      jest.spyOn(authService, 'clearRefreshToken').mockResolvedValue();
+      await authController.logout(userId, mockRes as unknown as Response);
+      expect(authService.clearRefreshToken).toHaveBeenCalledWith(userId);
+      expect(mockRes.clearCookie).toHaveBeenNthCalledWith(
+        1,
+        cookieNames.accessTokenCookieName,
+      );
+      expect(mockRes.clearCookie).toHaveBeenNthCalledWith(
+        2,
+        cookieNames.refreshTokenCookieName,
+      );
+      expect(mockRes.send).toHaveBeenCalled();
     });
   });
 });

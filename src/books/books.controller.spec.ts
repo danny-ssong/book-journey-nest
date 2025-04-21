@@ -1,20 +1,63 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { BooksController } from './books.controller';
-import { BooksService } from './books.service';
+import { BooksService, SearchBookedMeta, SearchedBook } from './books.service';
+import { TestBed } from '@automock/jest';
 
 describe('BooksController', () => {
-  let controller: BooksController;
+  let booksController: BooksController;
+  let booksService: jest.Mocked<BooksService>;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [BooksController],
-      providers: [BooksService],
-    }).compile();
+  beforeEach(() => {
+    const { unit, unitRef } = TestBed.create(BooksController).compile();
 
-    controller = module.get<BooksController>(BooksController);
+    booksController = unit;
+    booksService = unitRef.get(BooksService);
+
+    jest.clearAllMocks();
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
+  describe('findOne', () => {
+    it('should be defined', async () => {
+      const isbn = '1234567890123';
+      jest.spyOn(booksService, 'findOne').mockResolvedValue({
+        isbn,
+        title: 'test',
+      } as SearchedBook);
+
+      const result = await booksController.findOne(isbn);
+      expect(booksService.findOne).toHaveBeenCalledWith(isbn);
+
+      expect(result).toEqual({
+        isbn,
+        title: 'test',
+      });
+    });
+  });
+
+  describe('searchBooks', () => {
+    it('should be defined', async () => {
+      const mockSearchDto = {
+        queryString: 'test',
+        size: 10,
+        page: 1,
+      };
+
+      const searchedBooks = [
+        { isbn: '1234567890123', title: 'test' },
+        { isbn: '1234567890124', title: 'test2' },
+      ] as SearchedBook[];
+
+      jest.spyOn(booksService, 'searchBooks').mockResolvedValue({
+        documents: searchedBooks,
+        meta: {} as SearchBookedMeta,
+      });
+
+      const result = await booksController.searchBooks(mockSearchDto);
+      expect(booksService.searchBooks).toHaveBeenCalledWith(mockSearchDto);
+
+      expect(result).toEqual({
+        documents: searchedBooks,
+        meta: {} as SearchBookedMeta,
+      });
+    });
   });
 });
