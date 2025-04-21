@@ -17,6 +17,10 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:user": "jest --testPathPattern=src/users --coverage --collectCoverageFrom=src/users/**",
+    "test:profile": "jest --testPathPattern=src/profiles --coverage --collectCoverageFrom=src/profiles/**",
+    "test:auth": "jest --testPathPattern=src/auth --coverage --collectCoverageFrom=src/auth/**",
+    "test:book": "jest --testPathPattern=src/books --coverage --collectCoverageFrom=src/books/**",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
@@ -42,6 +46,8 @@
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
+    "@automock/adapters.nestjs": "^2.1.0",
+    "@automock/jest": "^2.1.0",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
     "@nestjs/cli": "^11.0.0",
@@ -77,7 +83,15 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "moduleNameMapper": {
+      "src/(.*)": "<rootDir>/src/$1"
+    },
+    "roots": [
+      "src"
+    ],
+    "coveragePathIgnorePatterns": [
+      "module.ts"
+    ],
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
@@ -85,7 +99,7 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
+    "coverageDirectory": "./coverage",
     "testEnvironment": "node"
   }
 }
