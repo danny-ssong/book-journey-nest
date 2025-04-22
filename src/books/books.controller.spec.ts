@@ -16,7 +16,7 @@ describe('BooksController', () => {
   });
 
   describe('findOne', () => {
-    it('should be defined', async () => {
+    it('should call booksService.findOne and return book', async () => {
       const isbn = '1234567890123';
       jest.spyOn(booksService, 'findOne').mockResolvedValue({
         isbn,
@@ -34,7 +34,7 @@ describe('BooksController', () => {
   });
 
   describe('searchBooks', () => {
-    it('should be defined', async () => {
+    it('should call booksService.searchBooks and return searched books', async () => {
       const mockSearchDto = {
         queryString: 'test',
         size: 10,

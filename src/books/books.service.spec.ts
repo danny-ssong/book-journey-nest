@@ -7,7 +7,7 @@ import {
 describe('BooksService', () => {
   let booksService: BooksService;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     const { unit } = TestBed.create(BooksService).compile();
     booksService = unit;
 

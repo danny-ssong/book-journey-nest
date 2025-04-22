@@ -1,20 +1,50 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
+import { TestBed } from '@automock/jest';
+import { User } from './entities/user.entity';
 
 describe('UsersController', () => {
-  let controller: UsersController;
+  let userController: UsersController;
+  let usersService: jest.Mocked<UsersService>;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [UsersController],
-      providers: [UsersService],
-    }).compile();
+    const { unit, unitRef } = TestBed.create(UsersController).compile();
 
-    controller = module.get<UsersController>(UsersController);
+    userController = unit;
+    usersService = unitRef.get(UsersService);
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
+  describe('findAll', () => {
+    it('should call usersService.findAll and return users', async () => {
+      const users = [{ id: 1 }, { id: 2 }] as User[];
+      jest.spyOn(usersService, 'findAll').mockResolvedValue(users);
+
+      const result = await userController.findAll();
+      expect(usersService.findAll).toHaveBeenCalled();
+      expect(result).toEqual(users);
+    });
+  });
+
+  describe('findOne', () => {
+    it('should call usersService.findOneWithProfile and return user with profile', async () => {
+      const user = { id: 1, profile: { id: 1 } } as User;
+      jest.spyOn(usersService, 'findOneWithProfile').mockResolvedValue(user);
+
+      const result = await userController.findOne(1);
+      expect(usersService.findOneWithProfile).toHaveBeenCalledWith(1);
+      expect(result).toEqual(user);
+    });
+  });
+
+  describe('getMe', () => {
+    it('should call usersService.findOneWithProfile and return user with profile', async () => {
+      const user = { id: 1, profile: { id: 1 } } as User;
+      jest.spyOn(usersService, 'findOneWithProfile').mockResolvedValue(user);
+
+      const result = await userController.getMe(1);
+      expect(usersService.findOneWithProfile).toHaveBeenCalledWith(1);
+      expect(result).toEqual(user);
+    });
   });
 });

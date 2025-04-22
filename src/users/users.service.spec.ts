@@ -1,18 +1,239 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
+import { TestBed } from '@automock/jest';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
+import { Repository, DataSource, QueryRunner } from 'typeorm';
+import { CreateUserDto } from './dto/create-user.dto';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 
 describe('UsersService', () => {
-  let service: UsersService;
+  let userService: UsersService;
+  let userRepository: jest.Mocked<Repository<User>>;
+  let dataSource: jest.Mocked<DataSource>;
+  let queryRunner: jest.Mocked<QueryRunner>;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [UsersService],
-    }).compile();
+  beforeEach(() => {
+    const { unit, unitRef } = TestBed.create(UsersService).compile();
 
-    service = module.get<UsersService>(UsersService);
+    userService = unit;
+    userRepository = unitRef.get(getRepositoryToken(User) as string);
+    dataSource = unitRef.get(DataSource);
+
+    queryRunner = {
+      connect: jest.fn(),
+      startTransaction: jest.fn(),
+      commitTransaction: jest.fn(),
+      rollbackTransaction: jest.fn(),
+      release: jest.fn(),
+      manager: {
+        findOne: jest.fn(),
+        createQueryBuilder: jest.fn().mockReturnValue({
+          insert: jest.fn().mockReturnThis(),
+          into: jest.fn().mockReturnThis(),
+          values: jest.fn().mockReturnThis(),
+          execute: jest.fn(),
+        }),
+      },
+    } as any as jest.Mocked<QueryRunner>;
+
+    jest.clearAllMocks();
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  describe('createWithProfile', () => {
+    it('should create a user and a profile with third party Id(google OAuth)', async () => {
+      jest.spyOn(dataSource, 'createQueryRunner').mockReturnValue(queryRunner);
+
+      const createUserDto: CreateUserDto = {
+        email: 'test@test.com',
+        thirdPartyId: '1234567890',
+        name: 'test',
+      };
+
+      const profileCreationResult = { identifiers: [{ id: 1 }] };
+      (
+        queryRunner.manager.createQueryBuilder().execute as jest.Mock
+      ).mockResolvedValueOnce(profileCreationResult);
+
+      const userCreationResult = { identifiers: [{ id: 1 }] };
+      (
+        queryRunner.manager.createQueryBuilder().execute as jest.Mock
+      ).mockResolvedValueOnce(userCreationResult);
+
+      const newUser = {
+        id: 2,
+        profileId: 1,
+        ...createUserDto,
+      };
+      (queryRunner.manager.findOne as jest.Mock).mockResolvedValueOnce(newUser);
+
+      const result = await userService.createWithProfile(createUserDto);
+
+      expect(dataSource.createQueryRunner).toHaveBeenCalled();
+      expect(queryRunner.connect).toHaveBeenCalled();
+      expect(queryRunner.startTransaction).toHaveBeenCalled();
+      expect(queryRunner.commitTransaction).toHaveBeenCalled();
+      expect(result).toEqual(newUser);
+      expect(queryRunner.release).toHaveBeenCalled();
+    });
+
+    it('should throw internal server error if profile creation fails', async () => {
+      jest.spyOn(dataSource, 'createQueryRunner').mockReturnValue(queryRunner);
+
+      const createUserDto: CreateUserDto = {
+        email: 'test@test.com',
+        thirdPartyId: '1234567890',
+        name: 'test',
+      };
+
+      (
+        queryRunner.manager.createQueryBuilder().execute as jest.Mock
+      ).mockRejectedValueOnce(new Error('Profile creation failed'));
+
+      await expect(
+        userService.createWithProfile(createUserDto),
+      ).rejects.toThrow(Error);
+    });
+
+    it('should throw internal server error if user creation fails', async () => {
+      jest.spyOn(dataSource, 'createQueryRunner').mockReturnValue(queryRunner);
+
+      const createUserDto: CreateUserDto = {
+        email: 'test@test.com',
+        thirdPartyId: '1234567890',
+        name: 'test',
+      };
+
+      (
+        queryRunner.manager.createQueryBuilder().execute as jest.Mock
+      ).mockRejectedValueOnce(new Error('User creation failed'));
+
+      await expect(
+        userService.createWithProfile(createUserDto),
+      ).rejects.toThrow(Error);
+    });
+
+    it('should throw internal server error if user not found', async () => {
+      jest.spyOn(dataSource, 'createQueryRunner').mockReturnValue(queryRunner);
+
+      const createUserDto: CreateUserDto = {
+        email: 'test@test.com',
+        thirdPartyId: '1234567890',
+        name: 'test',
+      };
+
+      const profileCreationResult = { identifiers: [{ id: 1 }] };
+      (
+        queryRunner.manager.createQueryBuilder().execute as jest.Mock
+      ).mockResolvedValueOnce(profileCreationResult);
+
+      const userCreationResult = { identifiers: [{ id: 1 }] };
+      (
+        queryRunner.manager.createQueryBuilder().execute as jest.Mock
+      ).mockResolvedValueOnce(userCreationResult);
+
+      (queryRunner.manager.findOne as jest.Mock).mockResolvedValueOnce(null);
+
+      await expect(
+        userService.createWithProfile(createUserDto),
+      ).rejects.toThrow(InternalServerErrorException);
+    });
+  });
+
+  describe('findUserWithRefreshToken', () => {
+    it('should return user if user exists', async () => {
+      const user = {
+        id: 1,
+        refreshToken: 'refreshToken',
+      } as User;
+
+      jest.spyOn(userRepository, 'findOne').mockResolvedValue(user);
+
+      const result = await userService.findUserWithRefreshToken(
+        1,
+        'refreshToken',
+      );
+
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: { id: user.id },
+      });
+      expect(result).toEqual(user);
+    });
+
+    it('should throw not found exception if user not found', async () => {
+      jest.spyOn(userRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(
+        userService.findUserWithRefreshToken(1, 'refreshToken'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw unauthorized exception if refresh token does not match', async () => {
+      const user = {
+        id: 1,
+        refreshToken: 'refreshToken',
+      } as User;
+
+      jest.spyOn(userRepository, 'findOne').mockResolvedValue(user);
+
+      await expect(
+        userService.findUserWithRefreshToken(1, 'wrongRefreshToken'),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('saveRefreshToken', () => {
+    it('should save refresh token', async () => {
+      await userService.saveRefreshToken(1, 'refreshToken');
+
+      expect(userRepository.update).toHaveBeenCalledWith(1, {
+        refreshToken: 'refreshToken',
+      });
+    });
+  });
+
+  describe('clearRefreshToken', () => {
+    it('should remove refresh token', async () => {
+      await userService.clearRefreshToken(1);
+
+      expect(userRepository.update).toHaveBeenCalledWith(1, {
+        refreshToken: null,
+      });
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return users', async () => {
+      const users = [{ id: 1 }, { id: 2 }] as User[];
+
+      jest.spyOn(userRepository, 'find').mockResolvedValue(users);
+      const result = await userService.findAll();
+      expect(result).toEqual(users);
+    });
+  });
+
+  describe('findOneWithProfile', () => {
+    it('should return user if user exists', async () => {
+      const user = { id: 1, profile: { id: 1 } } as User;
+
+      jest.spyOn(userRepository, 'findOne').mockResolvedValue(user);
+      const result = await userService.findOneWithProfile(1);
+
+      expect(result).toEqual(user);
+    });
+  });
+
+  describe('findUserByThirdPartyId', () => {
+    it('should return user if user exists', async () => {
+      const user = { id: 1, thirdPartyId: '1234567890' } as User;
+
+      jest.spyOn(userRepository, 'findOne').mockResolvedValue(user);
+      const result = await userService.findUserByThirdPartyId('1234567890');
+
+      expect(result).toEqual(user);
+    });
   });
 });

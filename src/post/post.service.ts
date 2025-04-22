@@ -37,88 +37,54 @@ export class PostService {
 
     if (!user) throw new NotFoundException('User not found');
 
-    const author = await this.authorRepository.findOne({
-      where: { name: createPostDto.book.author },
-    });
+    const author = await this.getOrCreateAuthor(createPostDto.book.author, qr);
+    const book = await this.getOrCreateBook(createPostDto.book, author.id, qr);
+    const post = await this.createPost(createPostDto, userId, book.isbn, qr);
 
-    let authorId: number;
-    if (!author) {
-      const authorResult = await this.createAuthor(
-        { name: createPostDto.book.author },
-        qr,
-      );
-      authorId = authorResult.identifiers[0].id as number;
-    } else {
-      authorId = author.id;
-    }
-
-    const book = await this.bookRepository.findOne({
-      where: { isbn: createPostDto.book.isbn },
-    });
-    let bookId: string;
-    if (!book) {
-      const bookResult = await this.createBook(
-        createPostDto.book,
-        authorId,
-        qr,
-      );
-      bookId = bookResult.identifiers[0].isbn as string;
-    } else {
-      bookId = book.isbn;
-    }
-
-    if (!bookId)
-      throw new NotFoundException('Book not found and fail to create');
-    const post = await this.createPost(createPostDto, userId, bookId, qr);
-    const postId = post.identifiers[0].id as number;
-
-    const newPost = await qr.manager
-      .createQueryBuilder(Post, 'post')
-      .leftJoinAndSelect('post.book', 'book')
-      .leftJoin('post.user', 'user')
-      .addSelect('user.id')
-      .leftJoinAndSelect('user.profile', 'profile')
-      .leftJoinAndSelect('book.author', 'author')
-      .where('post.id = :id', { id: postId })
-      .getOne();
-
+    const newPost = await this.findPostById(userId, post.id);
     return newPost;
   }
 
-  private async createAuthor(author: CreateAuthorDto, qr: QueryRunner) {
-    return qr.manager
-      .createQueryBuilder()
-      .insert()
-      .into(Author)
-      .values(author)
-      .execute();
+  private async getOrCreateAuthor(name: string, qr: QueryRunner) {
+    let author = await this.authorRepository.findOne({
+      where: { name },
+    });
+
+    if (!author) {
+      author = qr.manager.create(Author, { name });
+      await qr.manager.save(author);
+    }
+
+    return author;
   }
 
-  private async createBook(
-    book: CreateBookDto,
+  private async getOrCreateBook(
+    createBookDto: CreateBookDto,
     authorId: number,
     qr: QueryRunner,
   ) {
-    return qr.manager
-      .createQueryBuilder()
-      .insert()
-      .into(Book)
-      .values({
-        ...book,
+    let book = await this.bookRepository.findOne({
+      where: { isbn: createBookDto.isbn },
+    });
+    if (!book) {
+      book = qr.manager.create(Book, {
+        ...createBookDto,
         author: { id: authorId },
-      })
-      .execute();
+      });
+      await qr.manager.save(book);
+    }
+    return book;
   }
 
   private async updatePost(
-    post: UpdatePostDto,
+    updatePostDto: UpdatePostDto,
     id: number,
     userId: number,
     bookId: string,
     qr: QueryRunner,
   ) {
     return qr.manager.update(Post, id, {
-      ...post,
+      ...updatePostDto,
       book: { isbn: bookId },
       user: { id: userId },
     });
@@ -130,24 +96,25 @@ export class PostService {
     bookId: string,
     qr: QueryRunner,
   ) {
-    return qr.manager
-      .createQueryBuilder()
-      .insert()
-      .into(Post)
-      .values({
-        ...post,
-        book: { isbn: bookId },
-        user: { id: userId },
-      })
-      .execute();
+    const newPost = qr.manager.create(Post, {
+      ...post,
+      book: { isbn: bookId },
+      user: { id: userId },
+    });
+    return qr.manager.save(newPost);
   }
 
-  async findBookPosts(isbn: string) {
-    const book = await this.bookRepository.findOne({ where: { isbn } });
-    if (!book)
-      throw new NotFoundException(`Book by isbn not found isbn:${isbn}`);
+  async findPostsByBook(isbn: string): Promise<Book> {
+    const bookWithPosts = await this.findBookWithPosts(isbn);
 
-    return this.bookRepository
+    if (!bookWithPosts)
+      throw new NotFoundException(`No posts found for book with isbn: ${isbn}`);
+
+    return bookWithPosts;
+  }
+
+  private async findBookWithPosts(isbn: string) {
+    return await this.bookRepository
       .createQueryBuilder('book')
       .leftJoinAndSelect('book.posts', 'post')
       .leftJoin('post.user', 'user')
@@ -155,11 +122,19 @@ export class PostService {
       .leftJoinAndSelect('user.profile', 'profile')
       .leftJoinAndSelect('book.author', 'author')
       .where('book.isbn = :isbn', { isbn })
-      .getMany();
+      .getOne();
   }
 
-  async findUserPosts(userId: number, getPostsDto: GetPostsDto) {
-    const qb = this.getUserPosts(userId);
+  async findPostsByUser(
+    userId: number,
+    getPostsDto: GetPostsDto,
+    isOwn: boolean = false,
+  ) {
+    const qb = this.getPostsQuerybuilder().where('post.user.id = :userId', {
+      userId,
+    });
+
+    if (isOwn) qb.andWhere('post.isPrivate = :isPrivate', { isPrivate: true });
 
     const { nextCursor } =
       await this.commonService.applyCursorPaginationParamsToQb(qb, getPostsDto);
@@ -173,32 +148,7 @@ export class PostService {
     };
   }
 
-  async findUserOwnPosts(userId: number, getPostsDto: GetPostsDto) {
-    const qb = this.getOwnPosts(userId);
-
-    const { nextCursor } =
-      await this.commonService.applyCursorPaginationParamsToQb(qb, getPostsDto);
-
-    const [data, count] = await qb.getManyAndCount();
-
-    return {
-      data,
-      nextCursor,
-      count,
-    };
-  }
-
-  private getUserPosts(userId: number) {
-    return this.getPosts()
-      .where('post.user.id = :userId', { userId })
-      .andWhere('post.isPrivate = false');
-  }
-
-  private getOwnPosts(userId: number) {
-    return this.getPosts().where('post.user.id = :userId', { userId });
-  }
-
-  private getPosts() {
+  private getPostsQuerybuilder() {
     return this.postRepository
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.book', 'book')
@@ -209,7 +159,7 @@ export class PostService {
   }
 
   async findAll(getPostsDto: GetPostsDto) {
-    const qb = this.getPosts();
+    const qb = this.getPostsQuerybuilder();
     qb.andWhere('post.isPrivate = :isPrivate', { isPrivate: false });
 
     const { nextCursor } =
@@ -224,9 +174,16 @@ export class PostService {
     };
   }
 
-  async findOne(userId: number, id: number) {
-    const post = await this.getPosts().where('post.id = :id', { id }).getOne();
-    if (post?.isPrivate && post.user.id !== userId)
+  private async getPostById(id: number): Promise<Post | null> {
+    return this.getPostsQuerybuilder().where('post.id = :id', { id }).getOne();
+  }
+
+  async findPostById(userId: number, id: number) {
+    const post = await this.getPostById(id);
+
+    if (!post) throw new NotFoundException('post not found');
+
+    if (post.isPrivate && post.user.id !== userId)
       throw new ForbiddenException();
 
     return post;
@@ -241,57 +198,21 @@ export class PostService {
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
+    if (!user) throw new NotFoundException('user not found');
 
-    if (!user) throw new NotFoundException('User not found');
+    const author = await this.getOrCreateAuthor(updatePostDto.book.author, qr);
+    const book = await this.getOrCreateBook(updatePostDto.book, author.id, qr);
 
-    const author = await this.authorRepository.findOne({
-      where: { name: updatePostDto.book.author },
-    });
+    await this.updatePost(updatePostDto, id, userId, book.isbn, qr);
 
-    let authorId: number;
-    if (!author) {
-      const authorResult = await this.createAuthor(
-        { name: updatePostDto.book.author },
-        qr,
-      );
-      authorId = authorResult.identifiers[0].id as number;
-    } else {
-      authorId = author.id;
-    }
-
-    const book = await this.bookRepository.findOne({
-      where: { isbn: updatePostDto.book.isbn },
-    });
-    let bookId: string;
-    if (!book) {
-      const bookResult = await this.createBook(
-        updatePostDto.book,
-        authorId,
-        qr,
-      );
-      bookId = bookResult.identifiers[0].isbn as string;
-    } else {
-      bookId = book.isbn;
-    }
-
-    if (!bookId)
-      throw new NotFoundException('Book not found and fail to create');
-
-    await this.updatePost(updatePostDto, id, userId, bookId, qr);
-
-    const updatedPost = await this.postRepository.findOne({
-      where: { id },
-      relations: ['book'],
-    });
+    const updatedPost = await this.getPostById(id);
 
     return updatedPost;
   }
 
   async remove(id: number) {
     const post = await this.postRepository.findOne({ where: { id } });
-
-    if (!post) throw new NotFoundException('존재하지 않는 postId 입니다.');
-
+    if (!post) throw new NotFoundException('post not found');
     await this.postRepository.softDelete(id);
 
     return { id };

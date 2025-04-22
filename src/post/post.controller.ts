@@ -49,7 +49,7 @@ export class PostController {
 
   @Get('user/me')
   findMyPosts(@UserId() userId: number, @Query() getPostsDto: GetPostsDto) {
-    return this.postService.findUserOwnPosts(userId, getPostsDto);
+    return this.postService.findPostsByUser(userId, getPostsDto, true);
   }
 
   @Get('user/:userId')
@@ -58,19 +58,19 @@ export class PostController {
     @Query() getPostsDto: GetPostsDto,
     @Param('userId', ParseIntPipe) userId: number,
   ) {
-    return this.postService.findUserPosts(userId, getPostsDto);
+    return this.postService.findPostsByUser(userId, getPostsDto, false);
   }
 
   @Get('book/:isbn')
   @Public()
   findBookPosts(@Param('isbn') isbn: string) {
-    return this.postService.findBookPosts(isbn);
+    return this.postService.findPostsByBook(isbn);
   }
 
   @Get(':id')
   @Public()
   findOne(@UserId() userId: number, @Param('id', ParseIntPipe) id: number) {
-    return this.postService.findOne(userId, id);
+    return this.postService.findPostById(userId, id);
   }
 
   @Put(':id')

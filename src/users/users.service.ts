@@ -1,5 +1,6 @@
 import {
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -10,7 +11,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { QueryRunner } from 'typeorm';
 import { Profile } from 'src/profiles/entities/profile.entity';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
@@ -18,12 +18,7 @@ export class UsersService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private dataSource: DataSource,
-    private readonly configService: ConfigService,
   ) {}
-
-  async create(createUserDto: CreateUserDto, queryRunner: QueryRunner) {
-    return await this.userRepository.save(createUserDto);
-  }
 
   async createWithProfile(createUserDto: CreateUserDto) {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -39,6 +34,9 @@ export class UsersService {
       const newUser = await queryRunner.manager.findOne(User, {
         where: { id: userId },
       });
+
+      if (!newUser) throw new InternalServerErrorException('User not found');
+
       await queryRunner.commitTransaction();
       return newUser;
     } catch (error) {
@@ -122,17 +120,20 @@ export class UsersService {
     return this.userRepository.find();
   }
 
-  findOne(id: number) {
-    return this.userRepository.findOne({ where: { id } });
+  findOneWithProfile(id: number) {
+    return this.userRepository.findOne({
+      where: { id },
+      relations: ['profile'],
+    });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+  // update(id: number, updateUserDto: UpdateUserDto) {
+  //   return `This action updates a #${id} user`;
+  // }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
+  // remove(id: number) {
+  //   return this.userRepository.delete(id);
+  // }
 
   async findUserByThirdPartyId(thirdPartyId: string) {
     return await this.userRepository.findOne({ where: { thirdPartyId } });

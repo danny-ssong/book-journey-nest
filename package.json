@@ -21,6 +21,7 @@
     "test:profile": "jest --testPathPattern=src/profiles --coverage --collectCoverageFrom=src/profiles/**",
     "test:auth": "jest --testPathPattern=src/auth --coverage --collectCoverageFrom=src/auth/**",
     "test:book": "jest --testPathPattern=src/books --coverage --collectCoverageFrom=src/books/**",
+    "test:post": "jest --testPathPattern=src/post --coverage --collectCoverageFrom=src/post/**",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
