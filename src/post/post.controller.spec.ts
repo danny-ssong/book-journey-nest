@@ -35,7 +35,7 @@ describe('PostController', () => {
         content: 'content',
       } as Post;
 
-      jest.spyOn(postService, 'create').mockResolvedValue(post);
+      postService.create = jest.fn().mockResolvedValue(post);
 
       const result = await postController.create(userId, createPostDto, qr);
 
@@ -66,7 +66,7 @@ describe('PostController', () => {
         count: posts.length,
       };
 
-      jest.spyOn(postService, 'findAll').mockResolvedValue(returnValue);
+      postService.findAll = jest.fn().mockResolvedValue(returnValue);
 
       const result = await postController.findAll(getPostsDto);
 
@@ -94,7 +94,7 @@ describe('PostController', () => {
         count: posts.length,
       };
 
-      jest.spyOn(postService, 'findPostsByUser').mockResolvedValue(returnValue);
+      postService.findPostsByUser = jest.fn().mockResolvedValue(returnValue);
 
       const result = await postController.findMyPosts(userId, getPostsDto);
 
@@ -126,7 +126,7 @@ describe('PostController', () => {
         count: posts.length,
       };
 
-      jest.spyOn(postService, 'findPostsByUser').mockResolvedValue(returnValue);
+      postService.findPostsByUser = jest.fn().mockResolvedValue(returnValue);
 
       const result = await postController.findUserPosts(getPostsDto, userId);
 
@@ -153,7 +153,7 @@ describe('PostController', () => {
         posts: posts as Post[],
       } as Book;
 
-      jest.spyOn(postService, 'findPostsByBook').mockResolvedValue(book);
+      postService.findPostsByBook = jest.fn().mockResolvedValue(book);
 
       const result = await postController.findBookPosts(isbn);
 
@@ -172,7 +172,7 @@ describe('PostController', () => {
         content: 'content',
       } as Post;
 
-      jest.spyOn(postService, 'findPostById').mockResolvedValue(post);
+      postService.findPostById = jest.fn().mockResolvedValue(post);
 
       const result = await postController.findOne(userId, id);
 
@@ -195,7 +195,7 @@ describe('PostController', () => {
         content: 'content',
       } as Post;
 
-      jest.spyOn(postService, 'update').mockResolvedValue(post);
+      postService.update = jest.fn().mockResolvedValue(post);
 
       const result = await postController.update(id, userId, updatePostDto, qr);
 
@@ -212,7 +212,7 @@ describe('PostController', () => {
       it('should call postService.remove and return deleted post', async () => {
         const post = { id: 1, title: 'title', content: 'content' } as Post;
 
-        jest.spyOn(postService, 'remove').mockResolvedValue({ id: post.id });
+        postService.remove = jest.fn().mockResolvedValue({ id: post.id });
 
         const result = await postController.remove(1);
 

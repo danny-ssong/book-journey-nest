@@ -45,7 +45,7 @@ describe('UsersService', () => {
 
   describe('createWithProfile', () => {
     it('should create a user and a profile with third party Id(google OAuth)', async () => {
-      jest.spyOn(dataSource, 'createQueryRunner').mockReturnValue(queryRunner);
+      dataSource.createQueryRunner = jest.fn().mockReturnValue(queryRunner);
 
       const createUserDto: CreateUserDto = {
         email: 'test@test.com',
@@ -54,21 +54,19 @@ describe('UsersService', () => {
       };
 
       const profileCreationResult = { identifiers: [{ id: 1 }] };
-      (
-        queryRunner.manager.createQueryBuilder().execute as jest.Mock
-      ).mockResolvedValueOnce(profileCreationResult);
-
       const userCreationResult = { identifiers: [{ id: 1 }] };
-      (
-        queryRunner.manager.createQueryBuilder().execute as jest.Mock
-      ).mockResolvedValueOnce(userCreationResult);
+      queryRunner.manager.createQueryBuilder().execute = jest
+        .fn()
+        .mockResolvedValueOnce(profileCreationResult)
+        .mockResolvedValueOnce(userCreationResult);
 
       const newUser = {
         id: 2,
         profileId: 1,
         ...createUserDto,
       };
-      (queryRunner.manager.findOne as jest.Mock).mockResolvedValueOnce(newUser);
+
+      queryRunner.manager.findOne = jest.fn().mockResolvedValueOnce(newUser);
 
       const result = await userService.createWithProfile(createUserDto);
 
@@ -81,7 +79,7 @@ describe('UsersService', () => {
     });
 
     it('should throw internal server error if profile creation fails', async () => {
-      jest.spyOn(dataSource, 'createQueryRunner').mockReturnValue(queryRunner);
+      dataSource.createQueryRunner = jest.fn().mockReturnValue(queryRunner);
 
       const createUserDto: CreateUserDto = {
         email: 'test@test.com',
@@ -89,9 +87,9 @@ describe('UsersService', () => {
         name: 'test',
       };
 
-      (
-        queryRunner.manager.createQueryBuilder().execute as jest.Mock
-      ).mockRejectedValueOnce(new Error('Profile creation failed'));
+      queryRunner.manager.createQueryBuilder().execute = jest
+        .fn()
+        .mockRejectedValueOnce(new Error('Profile creation failed'));
 
       await expect(
         userService.createWithProfile(createUserDto),
@@ -99,7 +97,7 @@ describe('UsersService', () => {
     });
 
     it('should throw internal server error if user creation fails', async () => {
-      jest.spyOn(dataSource, 'createQueryRunner').mockReturnValue(queryRunner);
+      dataSource.createQueryRunner = jest.fn().mockReturnValue(queryRunner);
 
       const createUserDto: CreateUserDto = {
         email: 'test@test.com',
@@ -107,9 +105,9 @@ describe('UsersService', () => {
         name: 'test',
       };
 
-      (
-        queryRunner.manager.createQueryBuilder().execute as jest.Mock
-      ).mockRejectedValueOnce(new Error('User creation failed'));
+      queryRunner.manager.createQueryBuilder().execute = jest
+        .fn()
+        .mockRejectedValueOnce(new Error('User creation failed'));
 
       await expect(
         userService.createWithProfile(createUserDto),
@@ -117,7 +115,7 @@ describe('UsersService', () => {
     });
 
     it('should throw internal server error if user not found', async () => {
-      jest.spyOn(dataSource, 'createQueryRunner').mockReturnValue(queryRunner);
+      dataSource.createQueryRunner = jest.fn().mockReturnValue(queryRunner);
 
       const createUserDto: CreateUserDto = {
         email: 'test@test.com',
@@ -126,16 +124,13 @@ describe('UsersService', () => {
       };
 
       const profileCreationResult = { identifiers: [{ id: 1 }] };
-      (
-        queryRunner.manager.createQueryBuilder().execute as jest.Mock
-      ).mockResolvedValueOnce(profileCreationResult);
-
       const userCreationResult = { identifiers: [{ id: 1 }] };
-      (
-        queryRunner.manager.createQueryBuilder().execute as jest.Mock
-      ).mockResolvedValueOnce(userCreationResult);
+      queryRunner.manager.createQueryBuilder().execute = jest
+        .fn()
+        .mockResolvedValueOnce(profileCreationResult)
+        .mockResolvedValueOnce(userCreationResult);
 
-      (queryRunner.manager.findOne as jest.Mock).mockResolvedValueOnce(null);
+      queryRunner.manager.findOne = jest.fn().mockResolvedValue(null);
 
       await expect(
         userService.createWithProfile(createUserDto),
@@ -150,7 +145,7 @@ describe('UsersService', () => {
         refreshToken: 'refreshToken',
       } as User;
 
-      jest.spyOn(userRepository, 'findOne').mockResolvedValue(user);
+      userRepository.findOne = jest.fn().mockResolvedValue(user);
 
       const result = await userService.findUserWithRefreshToken(
         1,
@@ -164,7 +159,7 @@ describe('UsersService', () => {
     });
 
     it('should throw not found exception if user not found', async () => {
-      jest.spyOn(userRepository, 'findOne').mockResolvedValue(null);
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
 
       await expect(
         userService.findUserWithRefreshToken(1, 'refreshToken'),
@@ -177,7 +172,7 @@ describe('UsersService', () => {
         refreshToken: 'refreshToken',
       } as User;
 
-      jest.spyOn(userRepository, 'findOne').mockResolvedValue(user);
+      userRepository.findOne = jest.fn().mockResolvedValue(user);
 
       await expect(
         userService.findUserWithRefreshToken(1, 'wrongRefreshToken'),
@@ -209,7 +204,7 @@ describe('UsersService', () => {
     it('should return users', async () => {
       const users = [{ id: 1 }, { id: 2 }] as User[];
 
-      jest.spyOn(userRepository, 'find').mockResolvedValue(users);
+      userRepository.find = jest.fn().mockResolvedValue(users);
       const result = await userService.findAll();
       expect(result).toEqual(users);
     });
@@ -219,7 +214,7 @@ describe('UsersService', () => {
     it('should return user if user exists', async () => {
       const user = { id: 1, profile: { id: 1 } } as User;
 
-      jest.spyOn(userRepository, 'findOne').mockResolvedValue(user);
+      userRepository.findOne = jest.fn().mockResolvedValue(user);
       const result = await userService.findOneWithProfile(1);
 
       expect(result).toEqual(user);
@@ -230,7 +225,7 @@ describe('UsersService', () => {
     it('should return user if user exists', async () => {
       const user = { id: 1, thirdPartyId: '1234567890' } as User;
 
-      jest.spyOn(userRepository, 'findOne').mockResolvedValue(user);
+      userRepository.findOne = jest.fn().mockResolvedValue(user);
       const result = await userService.findUserByThirdPartyId('1234567890');
 
       expect(result).toEqual(user);

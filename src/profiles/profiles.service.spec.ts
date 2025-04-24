@@ -38,12 +38,12 @@ describe('ProfilesService', () => {
         nickname: 'updatedNickName',
       };
 
-      jest
-        .spyOn(userRepository, 'findOne')
+      userRepository.findOne = jest
+        .fn()
         .mockResolvedValue({ id: userId, profile: existingProfile } as User);
 
-      jest
-        .spyOn(profileRepository, 'findOne')
+      profileRepository.findOne = jest
+        .fn()
         .mockResolvedValue(updatedProfile as Profile);
 
       const result = await profilesService.update(userId, updateProfileDto);

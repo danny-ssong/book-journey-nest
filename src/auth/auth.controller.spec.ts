@@ -35,7 +35,7 @@ describe('AuthController', () => {
         redirect: jest.fn(),
       };
 
-      jest.spyOn(authService, 'login').mockResolvedValue({
+      authService.login = jest.fn().mockResolvedValue({
         accessToken: 'accessToken',
         refreshToken: 'refreshToken',
       });
@@ -104,7 +104,7 @@ describe('AuthController', () => {
         clearCookie: jest.fn().mockReturnThis(),
         send: jest.fn(),
       };
-      jest.spyOn(authService, 'clearRefreshToken').mockResolvedValue();
+      authService.clearRefreshToken = jest.fn().mockResolvedValue(undefined);
       await authController.logout(userId, mockRes as unknown as Response);
       expect(authService.clearRefreshToken).toHaveBeenCalledWith(userId);
       expect(mockRes.clearCookie).toHaveBeenNthCalledWith(

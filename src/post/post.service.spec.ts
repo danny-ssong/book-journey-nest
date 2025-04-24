@@ -20,7 +20,7 @@ describe('PostService', () => {
   let bookRepository: Repository<Book>;
   let authorRepository: Repository<Author>;
 
-  let mockQueryRunner = {
+  const mockQueryRunner = {
     manager: {
       create: jest.fn(),
       save: jest.fn(),
@@ -56,7 +56,7 @@ describe('PostService', () => {
         },
       } as CreatePostDto;
 
-      jest.spyOn(userRepository, 'findOne').mockResolvedValue({
+      userRepository.findOne = jest.fn().mockResolvedValue({
         id: userId,
       } as User);
 
@@ -100,7 +100,7 @@ describe('PostService', () => {
     });
     it('should throw NotFoundException if user not found', async () => {
       const userId = 1;
-      jest.spyOn(userRepository, 'findOne').mockResolvedValue(null);
+      userRepository.findOne = jest.fn().mockResolvedValue(null);
       await expect(
         postService.create(userId, {} as CreatePostDto, mockQueryRunner as any),
       ).rejects.toThrow(NotFoundException);
@@ -170,8 +170,8 @@ describe('PostService', () => {
         .spyOn(postService as any, 'getPostsQuerybuilder')
         .mockReturnValue(qb);
 
-      jest
-        .spyOn(commonService, 'applyCursorPaginationParamsToQb')
+      commonService.applyCursorPaginationParamsToQb = jest
+        .fn()
         .mockResolvedValue({
           nextCursor: null,
         } as any);
@@ -277,8 +277,8 @@ describe('PostService', () => {
         },
       } as UpdatePostDto;
 
-      jest
-        .spyOn(userRepository, 'findOne')
+      userRepository.findOne = jest
+        .fn()
         .mockResolvedValue({ id: userId } as User);
 
       jest
@@ -336,7 +336,7 @@ describe('PostService', () => {
     it('should remove a post', async () => {
       const id = 1;
       const post = { id } as Post;
-      jest.spyOn(postRepository, 'findOne').mockResolvedValue(post);
+      postRepository.findOne = jest.fn().mockResolvedValue(post);
 
       const result = await postService.remove(id);
       expect(result).toEqual({ id });
@@ -344,7 +344,7 @@ describe('PostService', () => {
 
     it('should throw NotFoundException if post is not found', async () => {
       const id = 1;
-      jest.spyOn(postRepository, 'findOne').mockResolvedValue(null);
+      postRepository.findOne = jest.fn().mockResolvedValue(null);
       await expect(postService.remove(id)).rejects.toThrow(NotFoundException);
     });
   });

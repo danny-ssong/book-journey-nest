@@ -29,7 +29,7 @@ describe('BooksService', () => {
         documents: SearchedBook[];
         meta: SearchBookedMeta;
       };
-      jest.spyOn(booksService, 'searchBooks').mockResolvedValue(searchResult);
+      booksService.searchBooks = jest.fn().mockResolvedValue(searchResult);
 
       const result = await booksService.findOne(isbn13);
       expect(booksService.searchBooks).toHaveBeenCalledWith({
@@ -45,7 +45,7 @@ describe('BooksService', () => {
     });
 
     it('throw NotFoundException if book is not found', async () => {
-      jest.spyOn(booksService, 'searchBooks').mockResolvedValue({
+      booksService.searchBooks = jest.fn().mockResolvedValue({
         documents: [],
         meta: { is_end: true, pageable_count: 0, total_count: 0 },
       });
@@ -81,7 +81,7 @@ describe('BooksService', () => {
         mockSearchDto.queryString,
       )}&size=${mockSearchDto.size}&page=${mockSearchDto.page}`;
 
-      jest.spyOn(global, 'fetch').mockResolvedValue({
+      global.fetch = jest.fn().mockResolvedValue({
         ok: true,
         json: jest.fn().mockResolvedValue(mockApiResponse),
       } as any);
@@ -117,7 +117,7 @@ describe('BooksService', () => {
         meta: {},
       };
 
-      jest.spyOn(global, 'fetch').mockResolvedValue({
+      global.fetch = jest.fn().mockResolvedValue({
         ok: true,
         json: jest.fn().mockResolvedValue(mockApiResponse),
       } as any);
@@ -127,7 +127,7 @@ describe('BooksService', () => {
     });
 
     it('throw InternalServerErrorException if kakao api error', async () => {
-      jest.spyOn(global, 'fetch').mockResolvedValue({
+      global.fetch = jest.fn().mockResolvedValue({
         ok: false,
       } as any);
       await expect(booksService.searchBooks(mockSearchDto)).rejects.toThrow(

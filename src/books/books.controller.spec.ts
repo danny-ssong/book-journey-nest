@@ -18,7 +18,7 @@ describe('BooksController', () => {
   describe('findOne', () => {
     it('should call booksService.findOne and return book', async () => {
       const isbn = '1234567890123';
-      jest.spyOn(booksService, 'findOne').mockResolvedValue({
+      booksService.findOne = jest.fn().mockResolvedValue({
         isbn,
         title: 'test',
       } as SearchedBook);
@@ -46,7 +46,7 @@ describe('BooksController', () => {
         { isbn: '1234567890124', title: 'test2' },
       ] as SearchedBook[];
 
-      jest.spyOn(booksService, 'searchBooks').mockResolvedValue({
+      booksService.searchBooks = jest.fn().mockResolvedValue({
         documents: searchedBooks,
         meta: {} as SearchBookedMeta,
       });

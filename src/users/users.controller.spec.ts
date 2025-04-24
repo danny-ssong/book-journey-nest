@@ -18,7 +18,7 @@ describe('UsersController', () => {
   describe('findAll', () => {
     it('should call usersService.findAll and return users', async () => {
       const users = [{ id: 1 }, { id: 2 }] as User[];
-      jest.spyOn(usersService, 'findAll').mockResolvedValue(users);
+      usersService.findAll = jest.fn().mockResolvedValue(users);
 
       const result = await userController.findAll();
       expect(usersService.findAll).toHaveBeenCalled();
@@ -29,7 +29,7 @@ describe('UsersController', () => {
   describe('findOne', () => {
     it('should call usersService.findOneWithProfile and return user with profile', async () => {
       const user = { id: 1, profile: { id: 1 } } as User;
-      jest.spyOn(usersService, 'findOneWithProfile').mockResolvedValue(user);
+      usersService.findOneWithProfile = jest.fn().mockResolvedValue(user);
 
       const result = await userController.findOne(1);
       expect(usersService.findOneWithProfile).toHaveBeenCalledWith(1);
@@ -40,7 +40,7 @@ describe('UsersController', () => {
   describe('getMe', () => {
     it('should call usersService.findOneWithProfile and return user with profile', async () => {
       const user = { id: 1, profile: { id: 1 } } as User;
-      jest.spyOn(usersService, 'findOneWithProfile').mockResolvedValue(user);
+      usersService.findOneWithProfile = jest.fn().mockResolvedValue(user);
 
       const result = await userController.getMe(1);
       expect(usersService.findOneWithProfile).toHaveBeenCalledWith(1);

@@ -29,8 +29,8 @@ describe('AuthService', () => {
       const user = { id: 1, email: 'test@test.com' };
       const payload = { sub: user.id, email: user.email };
 
-      jest.spyOn(configService, 'get').mockReturnValue('accessTokenSecret');
-      jest.spyOn(jwtService, 'signAsync').mockResolvedValue('accessToken');
+      configService.get = jest.fn().mockReturnValue('accessTokenSecret');
+      jwtService.signAsync = jest.fn().mockResolvedValue('accessToken');
 
       const token = await authService.issueAccessToken(user);
 
@@ -50,8 +50,8 @@ describe('AuthService', () => {
       const user = { id: 1, email: 'test@test.com' };
       const payload = { sub: user.id, email: user.email };
 
-      jest.spyOn(configService, 'get').mockReturnValue('refreshTokenSecret');
-      jest.spyOn(jwtService, 'signAsync').mockResolvedValue('refreshToken');
+      configService.get = jest.fn().mockReturnValue('refreshTokenSecret');
+      jwtService.signAsync = jest.fn().mockResolvedValue('refreshToken');
 
       const token = await authService.issueRefreshToken(user);
 
@@ -73,7 +73,7 @@ describe('AuthService', () => {
     const user = { id: 1, email, name } as User;
 
     it('should return user, not called createWithProfile if user exists', async () => {
-      jest.spyOn(userService, 'findUserByThirdPartyId').mockResolvedValue(user);
+      userService.findUserByThirdPartyId = jest.fn().mockResolvedValue(user);
 
       const result = await authService.validateOAuthLogin(
         thirdPartyId,
@@ -89,8 +89,8 @@ describe('AuthService', () => {
     });
 
     it('should return user, after create new user if user not exists ', async () => {
-      jest.spyOn(userService, 'findUserByThirdPartyId').mockResolvedValue(null);
-      jest.spyOn(userService, 'createWithProfile').mockResolvedValue(user);
+      userService.findUserByThirdPartyId = jest.fn().mockResolvedValue(null);
+      userService.createWithProfile = jest.fn().mockResolvedValue(user);
 
       const result = await authService.validateOAuthLogin(
         thirdPartyId,
@@ -114,11 +114,9 @@ describe('AuthService', () => {
     it('should return accessToken and refreshToken', async () => {
       const user = { id: 1, name: 'test', email: 'test@test.com' } as User;
 
-      jest
-        .spyOn(authService, 'issueAccessToken')
-        .mockResolvedValue('accessToken');
-      jest
-        .spyOn(authService, 'issueRefreshToken')
+      authService.issueAccessToken = jest.fn().mockResolvedValue('accessToken');
+      authService.issueRefreshToken = jest
+        .fn()
         .mockResolvedValue('refreshToken');
 
       const result = await authService.login(user);
