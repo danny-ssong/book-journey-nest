@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -134,7 +135,8 @@ export class PostService {
       userId,
     });
 
-    if (isOwn) qb.andWhere('post.isPrivate = :isPrivate', { isPrivate: true });
+    if (!isOwn)
+      qb.andWhere('post.isPrivate = :isPrivate', { isPrivate: false });
 
     const { nextCursor } =
       await this.commonService.applyCursorPaginationParamsToQb(qb, getPostsDto);
@@ -200,12 +202,21 @@ export class PostService {
     });
     if (!user) throw new NotFoundException('user not found');
 
+    const existingPost = await this.getPostById(id);
+
+    if (!existingPost) throw new NotFoundException('post not found');
+
+    if (existingPost.user.id !== userId)
+      throw new ForbiddenException('user is not owner');
+
     const author = await this.getOrCreateAuthor(updatePostDto.book.author, qr);
     const book = await this.getOrCreateBook(updatePostDto.book, author.id, qr);
 
     await this.updatePost(updatePostDto, id, userId, book.isbn, qr);
 
     const updatedPost = await this.getPostById(id);
+    if (!updatedPost)
+      throw new InternalServerErrorException('post not found something wrong');
 
     return updatedPost;
   }
