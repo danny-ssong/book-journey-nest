@@ -52,6 +52,9 @@ import { AuthGuard } from './auth/guard/auth.gaurd';
             ? false
             : true,
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        ssl: {
+          rejectUnauthorized: false,
+        },
       }),
       inject: [ConfigService],
     }),

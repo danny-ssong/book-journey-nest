@@ -31,7 +31,7 @@ export class PostService {
     private readonly commonService: CommonService,
   ) {}
 
-  async create(userId: number, createPostDto: CreatePostDto, qr: QueryRunner) {
+  async create(userId: string, createPostDto: CreatePostDto, qr: QueryRunner) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
@@ -80,7 +80,7 @@ export class PostService {
   private async updatePost(
     updatePostDto: UpdatePostDto,
     id: number,
-    userId: number,
+    userId: string,
     bookId: string,
     qr: QueryRunner,
   ) {
@@ -93,7 +93,7 @@ export class PostService {
 
   private async createPost(
     post: CreatePostDto,
-    userId: number,
+    userId: string,
     bookId: string,
     qr: QueryRunner,
   ) {
@@ -127,7 +127,7 @@ export class PostService {
   }
 
   async findPostsByUser(
-    userId: number,
+    userId: string,
     getPostsDto: GetPostsDto,
     isOwn: boolean = false,
   ) {
@@ -180,7 +180,7 @@ export class PostService {
     return this.getPostsQuerybuilder().where('post.id = :id', { id }).getOne();
   }
 
-  async findPostById(userId: number, id: number) {
+  async findPostById(userId: string, id: number) {
     const post = await this.getPostById(id);
 
     if (!post) throw new NotFoundException('post not found');
@@ -193,7 +193,7 @@ export class PostService {
 
   async update(
     id: number,
-    userId: number,
+    userId: string,
     updatePostDto: UpdatePostDto,
     qr: QueryRunner,
   ) {

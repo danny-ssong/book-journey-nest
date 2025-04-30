@@ -31,8 +31,14 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  getMe(@UserId() userId: string) {
+    return this.usersService.findOneWithProfile(userId);
+  }
+
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id') id: string) {
     return this.usersService.findOneWithProfile(id);
   }
 
@@ -45,10 +51,4 @@ export class UsersController {
   // remove(@Param('id') id: string) {
   //   return this.usersService.remove(+id);
   // }
-
-  @Get('me')
-  @UseGuards(JwtAuthGuard)
-  getMe(@UserId() userId: number) {
-    return this.usersService.findOneWithProfile(userId);
-  }
 }

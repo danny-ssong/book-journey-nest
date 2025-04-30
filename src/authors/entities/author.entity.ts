@@ -13,7 +13,7 @@ export class Author {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @OneToMany(() => Book, (book) => book.author)

@@ -187,7 +187,9 @@ describe('PostService', () => {
       expect(qb.where).toHaveBeenCalledWith('post.user.id = :userId', {
         userId,
       });
-      expect(qb.andWhere).not.toHaveBeenCalled();
+      expect(qb.andWhere).toHaveBeenCalledWith('post.isPrivate = :isPrivate', {
+        isPrivate: false,
+      });
       expect(
         commonService.applyCursorPaginationParamsToQb,
       ).toHaveBeenCalledWith(qb, getPostsDto);
@@ -205,9 +207,7 @@ describe('PostService', () => {
         true,
       );
 
-      expect(qb.andWhere).toHaveBeenCalledWith('post.isPrivate = :isPrivate', {
-        isPrivate: true,
-      });
+      expect(qb.andWhere).not.toHaveBeenCalled();
       expect(
         commonService.applyCursorPaginationParamsToQb,
       ).toHaveBeenCalledWith(qb, getPostsDto);
@@ -294,7 +294,7 @@ describe('PostService', () => {
 
       jest
         .spyOn(postService as any, 'getPostById')
-        .mockResolvedValue({ id, ...updateDto });
+        .mockResolvedValue({ id, ...updateDto, user: { id: userId } });
 
       const result = await postService.update(
         id,
@@ -328,7 +328,7 @@ describe('PostService', () => {
 
       expect((postService as any).getPostById).toHaveBeenCalledWith(id);
 
-      expect(result).toEqual({ id, ...updateDto });
+      expect(result).toEqual({ id, ...updateDto, user: { id: userId } });
     });
   });
 

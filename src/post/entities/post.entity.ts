@@ -9,6 +9,7 @@ import {
   ManyToOne,
   DeleteDateColumn,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class Post extends BaseTable {
@@ -33,9 +34,11 @@ export class Post extends BaseTable {
   endDate: Date;
 
   @Column()
+  @Exclude()
   isPrivate: boolean;
 
   @DeleteDateColumn()
+  @Exclude()
   deletedAt: Date;
 
   @ManyToOne(() => User, (user) => user.posts, { nullable: false })

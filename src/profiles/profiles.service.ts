@@ -14,7 +14,7 @@ export class ProfilesService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async update(userId: number, updateProfileDto: UpdateProfileDto) {
+  async update(userId: string, updateProfileDto: UpdateProfileDto) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['profile'],

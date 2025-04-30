@@ -13,6 +13,7 @@ import { GetPostsDto } from './dto/get-posts.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { CommonService } from 'src/common/common.service';
 import { CreatePostDto } from './dto/create-post.dto';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('Post Service - Integration Test', () => {
   let postService: PostService;
@@ -69,7 +70,7 @@ describe('Post Service - Integration Test', () => {
     users = [1, 2].map((id) =>
       userRepository.create({
         email: `test${id}@test.com`,
-        id: id,
+        id: uuidv4(),
         name: `name${id}`,
         thirdPartyId: `thirdPartyId${id}`,
         profile: profiles[id - 1],

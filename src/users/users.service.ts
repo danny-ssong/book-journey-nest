@@ -29,7 +29,7 @@ export class UsersService {
       const profileId = profile.identifiers[0].id as number;
 
       const user = await this.createUser(queryRunner, createUserDto, profileId);
-      const userId = user.identifiers[0].id as number;
+      const userId = user.identifiers[0].id as string;
 
       const newUser = await queryRunner.manager.findOne(User, {
         where: { id: userId },
@@ -84,7 +84,7 @@ export class UsersService {
     }`;
   }
 
-  async findUserWithRefreshToken(userId: number, refreshToken: string) {
+  async findUserWithRefreshToken(userId: string, refreshToken: string) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
@@ -104,13 +104,13 @@ export class UsersService {
     return user;
   }
 
-  async saveRefreshToken(userId: number, refreshToken: string) {
+  async saveRefreshToken(userId: string, refreshToken: string) {
     await this.userRepository.update(userId, {
       refreshToken,
     });
   }
 
-  async clearRefreshToken(userId: number) {
+  async clearRefreshToken(userId: string) {
     await this.userRepository.update(userId, {
       refreshToken: null,
     });
@@ -120,7 +120,7 @@ export class UsersService {
     return this.userRepository.find();
   }
 
-  findOneWithProfile(id: number) {
+  findOneWithProfile(id: string) {
     return this.userRepository.findOne({
       where: { id },
       relations: ['profile'],

@@ -14,7 +14,7 @@ export class AuthService {
     private usersService: UsersService,
   ) {}
 
-  async issueAccessToken(user: { id: number; email: string }) {
+  async issueAccessToken(user: { id: string; email: string }) {
     const accessTokenSecret = this.configService.get<string>(
       envVariableKeys.accessTokenSecret,
     );
@@ -29,7 +29,7 @@ export class AuthService {
     });
   }
 
-  async issueRefreshToken(user: { id: number; email: string }) {
+  async issueRefreshToken(user: { id: string; email: string }) {
     const refreshTokenSecret = this.configService.get<string>(
       envVariableKeys.refreshTokenSecret,
     );
@@ -56,7 +56,7 @@ export class AuthService {
     return user;
   }
 
-  async login(user: { id: number; email: string }) {
+  async login(user: { id: string; email: string }) {
     const accessToken = await this.issueAccessToken(user);
     const refreshToken = await this.issueRefreshToken(user);
 
@@ -65,7 +65,7 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async clearRefreshToken(userId: number) {
+  async clearRefreshToken(userId: string) {
     await this.usersService.clearRefreshToken(userId);
   }
 }

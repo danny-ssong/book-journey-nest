@@ -34,7 +34,7 @@ export class PostController {
   @Post()
   @UseInterceptors(TransactionInterceptor)
   create(
-    @UserId() userId: number,
+    @UserId() userId: string,
     @Body() createPostDto: CreatePostDto,
     @QueryRunner() queryRunner: QR,
   ) {
@@ -48,7 +48,7 @@ export class PostController {
   }
 
   @Get('user/me')
-  findMyPosts(@UserId() userId: number, @Query() getPostsDto: GetPostsDto) {
+  findMyPosts(@UserId() userId: string, @Query() getPostsDto: GetPostsDto) {
     return this.postService.findPostsByUser(userId, getPostsDto, true);
   }
 
@@ -56,7 +56,7 @@ export class PostController {
   @Public()
   findUserPosts(
     @Query() getPostsDto: GetPostsDto,
-    @Param('userId', ParseIntPipe) userId: number,
+    @Param('userId') userId: string,
   ) {
     return this.postService.findPostsByUser(userId, getPostsDto, false);
   }
@@ -69,7 +69,7 @@ export class PostController {
 
   @Get(':id')
   @Public()
-  findOne(@UserId() userId: number, @Param('id', ParseIntPipe) id: number) {
+  findOne(@UserId() userId: string, @Param('id', ParseIntPipe) id: number) {
     return this.postService.findPostById(userId, id);
   }
 
@@ -77,7 +77,7 @@ export class PostController {
   @UseInterceptors(TransactionInterceptor)
   update(
     @Param('id', ParseIntPipe) id: number,
-    @UserId() userId: number,
+    @UserId() userId: string,
     @Body() updatePostDto: UpdatePostDto,
     @QueryRunner() queryRunner: QR,
   ) {

@@ -32,7 +32,7 @@ export class AuthController {
   @UseGuards(GoogleAuthGuard)
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const { accessToken, refreshToken } = await this.authService.login(
-      req.user as { id: number; email: string },
+      req.user as { id: string; email: string },
     );
 
     // 쿠키에 토큰 저장
@@ -66,7 +66,7 @@ export class AuthController {
   }
 
   @Post('logout')
-  async logout(@UserId() userId: number, @Res() res: Response) {
+  async logout(@UserId() userId: string, @Res() res: Response) {
     await this.authService.clearRefreshToken(userId);
     res.clearCookie(cookieNames.accessTokenCookieName);
     res.clearCookie(cookieNames.refreshTokenCookieName);
