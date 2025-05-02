@@ -63,7 +63,7 @@ jobs:
         with:
           aws_access_key: ${{secrets.AWS_ACCESS_KEY_ID}}
           aws_secret_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-          aws_region: ${{secrets.AWS_REGION}}
+          region: ${{secrets.AWS_REGION}}
           application: book-journey
           environment: Book-journey-EB-env
           version_label: ${{github.run_id}}
