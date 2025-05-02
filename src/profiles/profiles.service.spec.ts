@@ -25,7 +25,7 @@ describe('ProfilesService', () => {
 
   describe('update', () => {
     it('should update profile', async () => {
-      const userId = 1;
+      const userId = '1';
       const updateProfileDto = {
         nickname: 'updatedNickName',
       };
@@ -62,7 +62,7 @@ describe('ProfilesService', () => {
     });
 
     it('should throw NotFoundException if user not found', async () => {
-      const userId = 1;
+      const userId = '1';
       jest.spyOn(userRepository, 'findOne').mockResolvedValue(null);
 
       await expect(profilesService.update(userId, {})).rejects.toThrow(
@@ -71,7 +71,7 @@ describe('ProfilesService', () => {
     });
 
     it('should throw NotFoundException if profile not found', async () => {
-      const userId = 1;
+      const userId = '1';
       jest
         .spyOn(userRepository, 'findOne')
         .mockResolvedValue({ id: userId } as User);

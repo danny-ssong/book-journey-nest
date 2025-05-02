@@ -27,7 +27,7 @@ describe('PostController', () => {
         title: 'title',
         content: 'contetn',
       } as CreatePostDto;
-      const userId = 1;
+      const userId = '1';
       const qr = {} as QueryRunner;
       const post = {
         id: 1,
@@ -77,7 +77,7 @@ describe('PostController', () => {
 
   describe('findMyPosts', () => {
     it('should call postService.findPostsByUser and return posts', async () => {
-      const userId = 1;
+      const userId = '1';
       const getPostsDto = {
         cursor: ' 1',
         take: 10,
@@ -109,7 +109,7 @@ describe('PostController', () => {
 
   describe('findUserPosts', () => {
     it('should call postService.findPostsByUser and return posts', async () => {
-      const userId = 1;
+      const userId = '1';
       const getPostsDto = {
         cursor: '1',
         take: 10,
@@ -164,7 +164,7 @@ describe('PostController', () => {
 
   describe('findOne', () => {
     it('should call postService.findPostById and return post', async () => {
-      const userId = 1;
+      const userId = '1';
       const id = 1;
       const post = {
         id: 1,
@@ -184,7 +184,7 @@ describe('PostController', () => {
   describe('update', () => {
     it('should call postService.update and return updated post', async () => {
       const id = 1;
-      const userId = 1;
+      const userId = '1';
       const updatePostDto = {
         title: 'updatedTitle',
       } as UpdatePostDto;

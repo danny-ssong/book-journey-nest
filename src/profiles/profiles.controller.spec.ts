@@ -35,7 +35,7 @@ describe('ProfilesController', () => {
         id: 1,
         nickname: 'updatedNickName',
       };
-      const userId = 1;
+      const userId = '1';
 
       jest
         .spyOn(profilesService, 'update')

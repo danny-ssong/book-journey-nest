@@ -44,7 +44,7 @@ describe('PostService', () => {
 
   describe('create', () => {
     it('should create a post', async () => {
-      const userId = 1;
+      const userId = '1';
       const createPostDto = {
         title: '테스트 포스트',
         content: '테스트 내용',
@@ -99,7 +99,7 @@ describe('PostService', () => {
       });
     });
     it('should throw NotFoundException if user not found', async () => {
-      const userId = 1;
+      const userId = '1';
       userRepository.findOne = jest.fn().mockResolvedValue(null);
       await expect(
         postService.create(userId, {} as CreatePostDto, mockQueryRunner as any),
@@ -144,10 +144,10 @@ describe('PostService', () => {
     let qb: any;
     let posts: Post[];
     let getPostsDto: GetPostsDto;
-    let userId: number;
+    let userId: string;
 
     beforeEach(() => {
-      userId = 1;
+      userId = '1';
       getPostsDto = {
         cursor: '1',
         take: 10,
@@ -222,7 +222,7 @@ describe('PostService', () => {
 
   describe('findPostById', () => {
     it('should return a post by post id', async () => {
-      const userId = 1;
+      const userId = '1';
       const id = 1;
       const post = {
         id,
@@ -236,7 +236,7 @@ describe('PostService', () => {
     });
 
     it('should throw NotFoundException if post is not found', async () => {
-      const userId = 1;
+      const userId = '1';
       const id = 1;
       jest.spyOn(postService as any, 'getPostById').mockResolvedValue(null);
       await expect(postService.findPostById(userId, id)).rejects.toThrow(
@@ -245,12 +245,12 @@ describe('PostService', () => {
     });
 
     it('should throw ForbiddenException if post is private and is not owned by the user', async () => {
-      const userId = 1;
+      const userId = '1';
       const id = 1;
       const post = {
         id,
         isPrivate: true,
-        user: { id: 2 },
+        user: { id: '2' },
       } as Post;
 
       jest.spyOn(postService as any, 'getPostById').mockResolvedValue(post);
@@ -263,7 +263,7 @@ describe('PostService', () => {
 
   describe('update', () => {
     it('should update a post', async () => {
-      const userId = 1;
+      const userId = '1';
       const id = 1;
       const author = { id: 1, name: '테스트 작가' } as Author;
       const updateDto = {

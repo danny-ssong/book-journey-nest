@@ -60,14 +60,14 @@ describe('Auth Service - Integration Test', () => {
 
     await profileRepository.save(profiles);
 
-    users = [1, 2].map((id) =>
+    users = ['1', '2'].map((id, i) =>
       userRepository.create({
         id: id,
         email: `user${id}@test.com`,
         name: `name${id}`,
         thirdPartyId: `thirdPartyId${id}`,
-        profile: profiles[id - 1],
-        refreshToken: id % 2 !== 0 ? `refreshToken${id}` : undefined,
+        profile: profiles[i - 1],
+        refreshToken: i % 2 !== 0 ? `refreshToken${id}` : undefined,
       }),
     );
 

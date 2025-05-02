@@ -25,7 +25,7 @@ describe('AuthService', () => {
 
   describe('issueAccessToken', () => {
     it('should issue access token', async () => {
-      const user = { id: 1, email: 'test@test.com' };
+      const user = { id: '1', email: 'test@test.com' };
       const payload = { sub: user.id, email: user.email };
 
       configService.get = jest.fn().mockReturnValue('accessTokenSecret');
@@ -46,7 +46,7 @@ describe('AuthService', () => {
 
   describe('issueRefreshToken', () => {
     it('should issue refresh token', async () => {
-      const user = { id: 1, email: 'test@test.com' };
+      const user = { id: '1', email: 'test@test.com' };
       const payload = { sub: user.id, email: user.email };
 
       configService.get = jest.fn().mockReturnValue('refreshTokenSecret');
@@ -69,7 +69,7 @@ describe('AuthService', () => {
     const thirdPartyId = '123';
     const email = 'test@test.com';
     const name = 'test';
-    const user = { id: 1, email, name } as User;
+    const user = { id: '1', email, name } as User;
 
     it('should return user, not called createWithProfile if user exists', async () => {
       userService.findUserByThirdPartyId = jest.fn().mockResolvedValue(user);
@@ -111,7 +111,7 @@ describe('AuthService', () => {
 
   describe('login', () => {
     it('should return accessToken and refreshToken', async () => {
-      const user = { id: 1, name: 'test', email: 'test@test.com' } as User;
+      const user = { id: '1', name: 'test', email: 'test@test.com' } as User;
 
       authService.issueAccessToken = jest.fn().mockResolvedValue('accessToken');
       authService.issueRefreshToken = jest
@@ -134,7 +134,7 @@ describe('AuthService', () => {
 
   describe('clearRefreshToken', () => {
     it('should clear refresh token', async () => {
-      const userId = 1;
+      const userId = '1';
       await authService.clearRefreshToken(userId);
       expect(userService.clearRefreshToken).toHaveBeenCalledWith(userId);
     });

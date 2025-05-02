@@ -12,7 +12,7 @@ import {
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
-enum Role {
+export enum Role {
   ADMIN = 'admin',
   USER = 'user',
 }
@@ -27,7 +27,6 @@ export class User extends BaseTable {
   email: string;
 
   @Column({
-    type: 'enum',
     enum: Role,
     default: Role.USER,
   })

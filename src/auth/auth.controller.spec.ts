@@ -99,7 +99,7 @@ describe('AuthController', () => {
 
   describe('logout', () => {
     it('should call authService.clearRefreshToken and clear cookies', async () => {
-      const userId = 1;
+      const userId = '1';
       const mockRes = {
         clearCookie: jest.fn().mockReturnThis(),
         send: jest.fn(),

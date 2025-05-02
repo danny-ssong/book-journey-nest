@@ -9,6 +9,21 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
+    # #for e2e test
+    # services:
+    #   - name: postgres
+    #     image: postgres:16
+    #     env:
+    #       POSTGRES_USER: postgres
+    #       POSTGRES_PASSWORD: postgres
+    #     options: >-
+    #       --health-cmd "pg_isready"
+    #       --health-interval 10s
+    #       --health-timeout 5s
+    #       --health-retries 5
+    #     ports:
+    #       - 5432:5432
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -18,11 +33,16 @@ jobs:
         with:
           node-version: 18
 
+      - name:
+
       - name: Install dependencies
         run: npm install
 
       - name: Build
         run: npm run build
+
+      - name: Run test
+        run: npm run test
 
       - name: Generate deployment package
         run: zip -r deploy.zip . -x '*.git*'

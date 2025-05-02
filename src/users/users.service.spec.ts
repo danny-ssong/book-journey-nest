@@ -53,15 +53,15 @@ describe('UsersService', () => {
         name: 'test',
       };
 
-      const profileCreationResult = { identifiers: [{ id: 1 }] };
-      const userCreationResult = { identifiers: [{ id: 1 }] };
+      const profileCreationResult = { identifiers: [{ id: '1' }] };
+      const userCreationResult = { identifiers: [{ id: '1' }] };
       queryRunner.manager.createQueryBuilder().execute = jest
         .fn()
         .mockResolvedValueOnce(profileCreationResult)
         .mockResolvedValueOnce(userCreationResult);
 
       const newUser = {
-        id: 2,
+        id: '2',
         profileId: 1,
         ...createUserDto,
       };
@@ -141,14 +141,14 @@ describe('UsersService', () => {
   describe('findUserWithRefreshToken', () => {
     it('should return user if user exists', async () => {
       const user = {
-        id: 1,
+        id: '1',
         refreshToken: 'refreshToken',
       } as User;
 
       userRepository.findOne = jest.fn().mockResolvedValue(user);
 
       const result = await userService.findUserWithRefreshToken(
-        1,
+        '1',
         'refreshToken',
       );
 
@@ -162,29 +162,29 @@ describe('UsersService', () => {
       userRepository.findOne = jest.fn().mockResolvedValue(null);
 
       await expect(
-        userService.findUserWithRefreshToken(1, 'refreshToken'),
+        userService.findUserWithRefreshToken('1', 'refreshToken'),
       ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw unauthorized exception if refresh token does not match', async () => {
       const user = {
-        id: 1,
+        id: '1',
         refreshToken: 'refreshToken',
       } as User;
 
       userRepository.findOne = jest.fn().mockResolvedValue(user);
 
       await expect(
-        userService.findUserWithRefreshToken(1, 'wrongRefreshToken'),
+        userService.findUserWithRefreshToken('1', 'wrongRefreshToken'),
       ).rejects.toThrow(UnauthorizedException);
     });
   });
 
   describe('saveRefreshToken', () => {
     it('should save refresh token', async () => {
-      await userService.saveRefreshToken(1, 'refreshToken');
+      await userService.saveRefreshToken('1', 'refreshToken');
 
-      expect(userRepository.update).toHaveBeenCalledWith(1, {
+      expect(userRepository.update).toHaveBeenCalledWith('1', {
         refreshToken: 'refreshToken',
       });
     });
@@ -192,9 +192,9 @@ describe('UsersService', () => {
 
   describe('clearRefreshToken', () => {
     it('should remove refresh token', async () => {
-      await userService.clearRefreshToken(1);
+      await userService.clearRefreshToken('1');
 
-      expect(userRepository.update).toHaveBeenCalledWith(1, {
+      expect(userRepository.update).toHaveBeenCalledWith('1', {
         refreshToken: null,
       });
     });
@@ -202,7 +202,7 @@ describe('UsersService', () => {
 
   describe('findAll', () => {
     it('should return users', async () => {
-      const users = [{ id: 1 }, { id: 2 }] as User[];
+      const users = [{ id: '1' }, { id: '2' }] as User[];
 
       userRepository.find = jest.fn().mockResolvedValue(users);
       const result = await userService.findAll();
@@ -212,10 +212,10 @@ describe('UsersService', () => {
 
   describe('findOneWithProfile', () => {
     it('should return user if user exists', async () => {
-      const user = { id: 1, profile: { id: 1 } } as User;
+      const user = { id: '1', profile: { id: 1 } } as User;
 
       userRepository.findOne = jest.fn().mockResolvedValue(user);
-      const result = await userService.findOneWithProfile(1);
+      const result = await userService.findOneWithProfile('1');
 
       expect(result).toEqual(user);
     });
@@ -223,7 +223,7 @@ describe('UsersService', () => {
 
   describe('findUserByThirdPartyId', () => {
     it('should return user if user exists', async () => {
-      const user = { id: 1, thirdPartyId: '1234567890' } as User;
+      const user = { id: '1', thirdPartyId: '1234567890' } as User;
 
       userRepository.findOne = jest.fn().mockResolvedValue(user);
       const result = await userService.findUserByThirdPartyId('1234567890');

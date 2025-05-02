@@ -41,7 +41,7 @@ export class Post extends BaseTable {
   @Exclude()
   deletedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.posts, { nullable: false })
+  @ManyToOne(() => User, (user) => user.posts)
   user: User;
 
   @ManyToOne(() => Book, (book) => book.posts)

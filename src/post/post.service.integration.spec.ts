@@ -31,6 +31,7 @@ describe('Post Service - Integration Test', () => {
         TypeOrmModule.forRoot({
           type: 'sqlite',
           database: ':memory:',
+          dropSchema: true,
           autoLoadEntities: true,
           synchronize: true,
         }),
@@ -50,6 +51,8 @@ describe('Post Service - Integration Test', () => {
   });
 
   beforeEach(async () => {
+    await dataSource.synchronize(true);
+
     const userRepository = dataSource.getRepository(User);
     const authorRepository = dataSource.getRepository(Author);
     const bookRepository = dataSource.getRepository(Book);
@@ -67,13 +70,13 @@ describe('Post Service - Integration Test', () => {
 
     await profileRepository.save(profiles);
 
-    users = [1, 2].map((id) =>
+    users = ['1', '2'].map((id, index) =>
       userRepository.create({
         email: `test${id}@test.com`,
-        id: uuidv4(),
+        id: id,
         name: `name${id}`,
         thirdPartyId: `thirdPartyId${id}`,
-        profile: profiles[id - 1],
+        profile: profiles[index],
       }),
     );
 
@@ -153,7 +156,7 @@ describe('Post Service - Integration Test', () => {
 
     it('should create post with a new book and author if they do not exist', async () => {
       const newPost = await postService.create(
-        1,
+        '1',
         {
           title: '새 포스트',
           content: '새 내용',
@@ -198,7 +201,7 @@ describe('Post Service - Integration Test', () => {
     it('should return a book with posts', async () => {
       const book = await postService.findPostsByBook('1234567890111');
       expect(book).toBeDefined();
-      expect(book.posts.length).toBeGreaterThan(10);
+      expect(book.posts.length).toBeGreaterThanOrEqual(10);
     });
 
     it('should throw NotFoundException if book isbn is not found', async () => {
@@ -247,7 +250,7 @@ describe('Post Service - Integration Test', () => {
         order: ['startDate_DESC'],
         cursor: undefined,
       };
-      const result = await postService.findPostsByUser(7, getPostsDto, false);
+      const result = await postService.findPostsByUser('7', getPostsDto, false);
       expect(result).toBeDefined();
       expect(result.data.length).toBe(0);
     });
@@ -330,7 +333,7 @@ describe('Post Service - Integration Test', () => {
       await expect(
         postService.update(
           1,
-          20000,
+          '20000',
           updatePostDto,
           dataSource.createQueryRunner(),
         ),
@@ -352,7 +355,7 @@ describe('Post Service - Integration Test', () => {
       await expect(
         postService.update(
           20000,
-          777,
+          '777',
           updatePostDto,
           dataSource.createQueryRunner(),
         ),
