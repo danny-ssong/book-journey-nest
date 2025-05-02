@@ -46,6 +46,8 @@ describe('Auth Service - Integration Test', () => {
   });
 
   beforeEach(async () => {
+    await dataSource.synchronize(true);
+
     const userRepository = dataSource.getRepository(User);
     const profileRepository = dataSource.getRepository(Profile);
 

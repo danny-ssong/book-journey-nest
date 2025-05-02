@@ -49,10 +49,7 @@ export class AuthController {
       ...cookieOptions,
       maxAge: refreshTokenMaxAge,
     });
-    console.log(
-      '리다이렉트 URL:',
-      this.configService.get<string>(envVariableKeys.frontendUrl),
-    );
+
     return res.redirect(
       this.configService.get<string>(envVariableKeys.frontendUrl)!,
     );

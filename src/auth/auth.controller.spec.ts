@@ -7,16 +7,19 @@ import {
   cookieNames,
   refreshTokenMaxAge,
 } from 'src/common/const/const';
+import { ConfigService } from '@nestjs/config';
+import { envVariableKeys } from 'src/common/const/env.const';
 
 describe('AuthController', () => {
   let authController: AuthController;
   let authService: jest.Mocked<AuthService>;
-
+  let configService: jest.Mocked<ConfigService>;
   beforeEach(() => {
     const { unit, unitRef } = TestBed.create(AuthController).compile();
 
     authController = unit;
     authService = unitRef.get(AuthService);
+    configService = unitRef.get(ConfigService);
 
     jest.clearAllMocks();
   });
@@ -35,10 +38,14 @@ describe('AuthController', () => {
         redirect: jest.fn(),
       };
 
+      const frontendUrl = 'http://localhost:3001';
+
       authService.login = jest.fn().mockResolvedValue({
         accessToken: 'accessToken',
         refreshToken: 'refreshToken',
       });
+
+      configService.get = jest.fn().mockReturnValue(frontendUrl);
 
       await authController.googleAuthRedirect(
         mockReq,
@@ -62,7 +69,12 @@ describe('AuthController', () => {
           maxAge: refreshTokenMaxAge,
         },
       );
-      expect(mockRes.redirect).toHaveBeenCalledWith('/');
+
+      expect(configService.get).toHaveBeenCalledWith(
+        envVariableKeys.frontendUrl,
+      );
+
+      expect(mockRes.redirect).toHaveBeenCalledWith(frontendUrl);
     });
   });
 
