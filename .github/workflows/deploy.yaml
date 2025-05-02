@@ -36,6 +36,19 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Set env for test
+        run: |
+          echo ENV=test >> .env
+          echo DB_TYPE=postgres >> .env
+          echo DB_HOST=localhost >> .env
+          echo DB_PORT=5432 >> .env
+          echo DB_USERNAME=postgres >> .env
+          echo DB_PASSWORD=postgres >> .env
+          echo DB_DATABASE=book-journey >> .env
+          echo HASH_ROUNDS=10 >> .env
+          echo ACCESS_TOKEN_SECRET=access_token_secret >> .env
+          echo REFRESH_TOKEN_SECRET=refresh_token_secret >> .env
+
       - name: Build
         run: npm run build
 

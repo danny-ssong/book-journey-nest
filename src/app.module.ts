@@ -22,7 +22,7 @@ import { AuthGuard } from './auth/guard/auth.gaurd';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: process.env.ENV === 'test' ? '.env.test.local' : '.env',
+      envFilePath: process.env.ENV === 'test' ? '.env.test' : '.env',
       validationSchema: Joi.object({
         ENV: Joi.string().valid('test', 'dev', 'prod').required(),
         DB_TYPE: Joi.string().valid('postgres').required(),
