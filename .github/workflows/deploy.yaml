@@ -64,7 +64,7 @@ jobs:
           aws_access_key: ${{secrets.AWS_ACCESS_KEY_ID}}
           aws_secret_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
           region: ${{secrets.AWS_REGION}}
-          application_name: book-journey
-          environment_name: Book-journey-EB-env
+          application_name: book-journey-EB
+          environment_name: book-journey-EB-env
           version_label: ${{github.run_id}}
           deployment_package: deploy.zip
