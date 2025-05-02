@@ -10,6 +10,8 @@ import {
 import { Response } from 'express';
 import { Public } from './decorator/public.decorator';
 import { UserId } from 'src/common/decorator/user-id.decorator';
+import { ConfigService } from '@nestjs/config';
+import { envVariableKeys } from 'src/common/const/env.const';
 
 export const cookieOptions = {
   httpOnly: true,
@@ -20,7 +22,10 @@ export const cookieOptions = {
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Get('google')
   @Public()
@@ -44,9 +49,13 @@ export class AuthController {
       ...cookieOptions,
       maxAge: refreshTokenMaxAge,
     });
-
-    // 클라이언트 리디렉션 또는 JSON 응답
-    return res.redirect('/');
+    console.log(
+      '리다이렉트 URL:',
+      this.configService.get<string>(envVariableKeys.frontendUrl),
+    );
+    return res.redirect(
+      this.configService.get<string>(envVariableKeys.frontendUrl)!,
+    );
   }
 
   @Post('access-token/refresh')

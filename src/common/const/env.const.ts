@@ -21,6 +21,8 @@ const googleClientId = 'GOOGLE_CLIENT_ID';
 const googleClientSecret = 'GOOGLE_CLIENT_SECRET';
 const googleCallbackUrl = 'GOOGLE_CALLBACK_URL';
 
+const frontendUrl = 'FRONTEND_URL';
+
 export const envVariableKeys = {
   env,
   dbType,
@@ -42,4 +44,5 @@ export const envVariableKeys = {
   googleClientId,
   googleClientSecret,
   googleCallbackUrl,
+  frontendUrl,
 };

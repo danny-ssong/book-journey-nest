@@ -17,7 +17,17 @@ async function bootstrap() {
       },
     }),
   );
+
+  app.enableCors({
+    origin:
+      process.env.ENV === 'prod'
+        ? process.env.FRONTEND_URL
+        : 'http://localhost:3000',
+    credentials: true,
+  });
+
   app.use(cookieParser());
   await app.listen(process.env.PORT ?? 3000);
 }
+
 bootstrap();

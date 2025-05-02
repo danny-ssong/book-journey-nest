@@ -37,6 +37,7 @@ import { AuthGuard } from './auth/guard/auth.gaurd';
         GOOGLE_CLIENT_ID: Joi.string().required(),
         GOOGLE_CLIENT_SECRET: Joi.string().required(),
         GOOGLE_CALLBACK_URL: Joi.string().required(),
+        FRONTEND_URL: Joi.string().required(),
       }),
     }),
     TypeOrmModule.forRootAsync({
@@ -52,9 +53,12 @@ import { AuthGuard } from './auth/guard/auth.gaurd';
             ? false
             : true,
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        ssl: {
-          rejectUnauthorized: false,
-        },
+        ssl:
+          configService.get<string>(envVariableKeys.env) === 'prod'
+            ? {
+                rejectUnauthorized: false,
+              }
+            : undefined,
       }),
       inject: [ConfigService],
     }),
