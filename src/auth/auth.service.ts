@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { accessTokenMaxAge, refreshTokenMaxAge } from 'src/common/const/const';
+import {
+  accessTokenMaxAgeMilliSeconds,
+  refreshTokenMaxAgeMilliSeconds,
+} from 'src/common/const/const';
 import { envVariableKeys } from 'src/common/const/env.const';
 import { UsersService } from 'src/users/users.service';
 import { JwtPayload } from './jwt-payload.interface';
@@ -25,7 +28,7 @@ export class AuthService {
 
     return await this.jwtService.signAsync(payload, {
       secret: accessTokenSecret,
-      expiresIn: accessTokenMaxAge,
+      expiresIn: accessTokenMaxAgeMilliSeconds / 1000,
     });
   }
 
@@ -39,7 +42,7 @@ export class AuthService {
     };
     return await this.jwtService.signAsync(payload, {
       secret: refreshTokenSecret,
-      expiresIn: refreshTokenMaxAge,
+      expiresIn: refreshTokenMaxAgeMilliSeconds / 1000,
     });
   }
 

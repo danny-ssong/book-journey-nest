@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Author } from 'src/authors/entities/author.entity';
 import { BaseTable } from 'src/common/entities/base-table.entity';
 import { Post } from 'src/post/entities/post.entity';
@@ -31,4 +32,10 @@ export class Book extends BaseTable {
 
   @Column()
   publishedAt: Date;
+
+  @Exclude()
+  declare updatedAt: Date;
+
+  @Exclude()
+  declare createdAt: Date;
 }

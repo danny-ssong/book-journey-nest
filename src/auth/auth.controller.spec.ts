@@ -3,9 +3,9 @@ import { AuthController, cookieOptions } from './auth.controller';
 import { AuthService } from './auth.service';
 import { TestBed } from '@automock/jest';
 import {
-  accessTokenMaxAge,
+  accessTokenMaxAgeMilliSeconds,
   cookieNames,
-  refreshTokenMaxAge,
+  refreshTokenMaxAgeMilliSeconds,
 } from 'src/common/const/const';
 import { ConfigService } from '@nestjs/config';
 import { envVariableKeys } from 'src/common/const/env.const';
@@ -58,7 +58,7 @@ describe('AuthController', () => {
         'accessToken',
         {
           ...cookieOptions,
-          maxAge: accessTokenMaxAge,
+          maxAge: accessTokenMaxAgeMilliSeconds,
         },
       );
       expect(mockRes.cookie).toHaveBeenCalledWith(
@@ -66,7 +66,7 @@ describe('AuthController', () => {
         'refreshToken',
         {
           ...cookieOptions,
-          maxAge: refreshTokenMaxAge,
+          maxAge: refreshTokenMaxAgeMilliSeconds,
         },
       );
 
@@ -101,7 +101,7 @@ describe('AuthController', () => {
         'accessToken',
         {
           ...cookieOptions,
-          maxAge: accessTokenMaxAge,
+          maxAge: accessTokenMaxAgeMilliSeconds,
         },
       );
 

@@ -32,10 +32,6 @@ export class CreatePostDto {
   @Type(() => Date)
   startDate: Date;
 
-  @IsDate()
-  @Type(() => Date)
-  endDate: Date;
-
   @IsBoolean()
   isPrivate: boolean;
 

@@ -40,9 +40,7 @@ export class PostService {
 
     const author = await this.getOrCreateAuthor(createPostDto.book.author, qr);
     const book = await this.getOrCreateBook(createPostDto.book, author.id, qr);
-    const post = await this.createPost(createPostDto, userId, book.isbn, qr);
-
-    const newPost = await this.findPostById(userId, post.id);
+    const newPost = await this.createPost(createPostDto, userId, book.isbn, qr);
     return newPost;
   }
 

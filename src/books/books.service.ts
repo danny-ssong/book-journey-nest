@@ -8,7 +8,8 @@ import { SearchBookDto } from './dto/search-book.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Author } from 'src/authors/entities/author.entity';
-
+import { ConfigService } from '@nestjs/config';
+import { envVariableKeys } from 'src/common/const/env.const';
 export interface SearchedBook {
   authors: string[];
   contents: string;
@@ -32,31 +33,37 @@ export interface SearchBookedMeta {
 
 @Injectable()
 export class BooksService {
-  constructor() {}
+  constructor(
+    private readonly configService: ConfigService,
+    @InjectRepository(Book)
+    private readonly bookRepository: Repository<Book>,
+  ) {}
 
   async findOne(isbn: string) {
     const searchResult = await this.searchBooks({
-      queryString: isbn,
+      query: isbn,
       size: 1,
       page: 1,
     });
     const book = searchResult.documents[0];
     if (!book) throw new NotFoundException('Book not found');
 
-    const booksUsingIsbn13 = this.selectPreferredIsbn([book]);
+    const booksUsingIsbn13 = this.convertSearchedBookToBookType([book]);
     return booksUsingIsbn13?.[0];
   }
 
   async searchBooks(searchBookDto: SearchBookDto) {
-    const { queryString, size, page } = searchBookDto;
-    const url = `${process.env.KAKAO_BASE_URL}/v3/search/book?target=title&query=${encodeURIComponent(
-      queryString,
+    const { query, size, page } = searchBookDto;
+    const url = `${this.configService.get(envVariableKeys.kakaoBaseUrl)}/v3/search/book?target=title&query=${encodeURIComponent(
+      query,
     )}&size=${size}&page=${page}`;
 
     try {
       const response = await fetch(url, {
         headers: {
-          Authorization: `KakaoAK ${process.env.KAKAO_API_KEY}`,
+          Authorization: `KakaoAK ${this.configService.get(
+            envVariableKeys.kakaoApiKey,
+          )}`,
         },
       });
       if (!response.ok) throw new Error();
@@ -65,15 +72,35 @@ export class BooksService {
         meta: SearchBookedMeta;
       };
       const uniqueBooks = this.removeDuplicatedBooks(data.documents);
-      const booksUsingIsbn13 = this.selectPreferredIsbn(uniqueBooks);
+      const books = this.convertSearchedBookToBookType(uniqueBooks);
 
       return {
         ...data,
-        documents: booksUsingIsbn13,
+        documents: books,
       };
     } catch (error) {
-      throw new InternalServerErrorException(`kakao api error \n ${error}`);
+      throw new InternalServerErrorException(`search book error \n ${error}`);
     }
+  }
+
+  async findAll() {
+    const books = await this.bookRepository.find();
+    return books;
+  }
+
+  private convertSearchedBookToBookType(searchedBooks: SearchedBook[]) {
+    const booksUsingIsbn13 = this.selectPreferredIsbn(searchedBooks);
+
+    return booksUsingIsbn13.map((searchedBook) => {
+      return {
+        ...searchedBook,
+        author: {
+          name: searchedBook.authors[0],
+        },
+        thumbnailUrl: searchedBook.thumbnail,
+        publishedAt: new Date(searchedBook.datetime),
+      };
+    });
   }
 
   private removeDuplicatedBooks(books: SearchedBook[]) {

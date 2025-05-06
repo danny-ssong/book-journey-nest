@@ -32,6 +32,7 @@ export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(TransactionInterceptor)
   create(
     @UserId() userId: string,
@@ -42,18 +43,17 @@ export class PostController {
   }
 
   @Get()
-  @Public()
   findAll(@Query() getPostsDto: GetPostsDto) {
     return this.postService.findAll(getPostsDto);
   }
 
   @Get('user/me')
+  @UseGuards(JwtAuthGuard)
   findMyPosts(@UserId() userId: string, @Query() getPostsDto: GetPostsDto) {
     return this.postService.findPostsByUser(userId, getPostsDto, true);
   }
 
   @Get('user/:userId')
-  @Public()
   findUserPosts(
     @Query() getPostsDto: GetPostsDto,
     @Param('userId') userId: string,
@@ -62,18 +62,17 @@ export class PostController {
   }
 
   @Get('book/:isbn')
-  @Public()
   findBookPosts(@Param('isbn') isbn: string) {
     return this.postService.findPostsByBook(isbn);
   }
 
   @Get(':id')
-  @Public()
   findOne(@UserId() userId: string, @Param('id', ParseIntPipe) id: number) {
     return this.postService.findPostById(userId, id);
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(TransactionInterceptor)
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -85,6 +84,7 @@ export class PostController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.postService.remove(id);
   }

@@ -14,12 +14,12 @@ const awsRegion = 'AWS_REGION';
 const bucketName = 'BUCKET_NAME';
 const port = 'PORT';
 
-const accessTokenExpiresIn = 'ACCESS_TOKEN_EXPIRES_IN';
-const refreshTokenExpiresIn = 'REFRESH_TOKEN_EXPIRES_IN';
-
 const googleClientId = 'GOOGLE_CLIENT_ID';
 const googleClientSecret = 'GOOGLE_CLIENT_SECRET';
 const googleCallbackUrl = 'GOOGLE_CALLBACK_URL';
+
+const kakaoBaseUrl = 'KAKAO_BASE_URL';
+const kakaoApiKey = 'KAKAO_API_KEY';
 
 const frontendUrl = 'FRONTEND_URL';
 
@@ -39,10 +39,10 @@ export const envVariableKeys = {
   awsRegion,
   bucketName,
   port,
-  accessTokenExpiresIn,
-  refreshTokenExpiresIn,
   googleClientId,
   googleClientSecret,
   googleCallbackUrl,
   frontendUrl,
+  kakaoBaseUrl,
+  kakaoApiKey,
 };

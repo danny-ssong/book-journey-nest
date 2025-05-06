@@ -36,7 +36,7 @@ describe('BooksController', () => {
   describe('searchBooks', () => {
     it('should call booksService.searchBooks and return searched books', async () => {
       const mockSearchDto = {
-        queryString: 'test',
+        query: 'test',
         size: 10,
         page: 1,
       };

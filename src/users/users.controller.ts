@@ -20,6 +20,7 @@ import { TransactionInterceptor } from 'src/common/interceptor/transaction.inter
 import { QueryRunner as QR } from 'typeorm';
 import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
 import { UserId } from 'src/common/decorator/user-id.decorator';
+import { Public } from 'src/auth/decorator/public.decorator';
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)

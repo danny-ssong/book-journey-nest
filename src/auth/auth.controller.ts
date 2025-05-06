@@ -3,15 +3,18 @@ import { AuthService } from './auth.service';
 import { GoogleAuthGuard } from './strategy/google.strategy';
 import { JwtRefreshTokenGuard } from './strategy/jwt-refresh.strategy';
 import {
-  accessTokenMaxAge,
+  accessTokenMaxAgeMilliSeconds,
   cookieNames,
-  refreshTokenMaxAge,
+  refreshTokenMaxAgeMilliSeconds,
 } from 'src/common/const/const';
 import { Response } from 'express';
 import { Public } from './decorator/public.decorator';
 import { UserId } from 'src/common/decorator/user-id.decorator';
 import { ConfigService } from '@nestjs/config';
 import { envVariableKeys } from 'src/common/const/env.const';
+import { ApiResponse } from '@nestjs/swagger';
+import { ApiOperation } from '@nestjs/swagger';
+import { JwtAuthGuard } from './strategy/jwt.strategy';
 
 export const cookieOptions = {
   httpOnly: true,
@@ -28,12 +31,10 @@ export class AuthController {
   ) {}
 
   @Get('google')
-  @Public()
   @UseGuards(GoogleAuthGuard)
   async googleAuth() {}
 
   @Get('google/callback')
-  @Public()
   @UseGuards(GoogleAuthGuard)
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const { accessToken, refreshToken } = await this.authService.login(
@@ -43,11 +44,11 @@ export class AuthController {
     // 쿠키에 토큰 저장
     res.cookie('access_token', accessToken, {
       ...cookieOptions,
-      maxAge: accessTokenMaxAge,
+      maxAge: accessTokenMaxAgeMilliSeconds,
     });
     res.cookie('refresh_token', refreshToken, {
       ...cookieOptions,
-      maxAge: refreshTokenMaxAge,
+      maxAge: refreshTokenMaxAgeMilliSeconds,
     });
 
     return res.redirect(
@@ -56,8 +57,12 @@ export class AuthController {
   }
 
   @Post('access-token/refresh')
-  @Public()
   @UseGuards(JwtRefreshTokenGuard)
+  @ApiOperation({ summary: 'Access Token 갱신' })
+  @ApiResponse({
+    status: 200,
+    description: 'Access Token 갱신 성공',
+  })
   async refresh(@Req() req, @Res() res: Response) {
     const accessToken = await this.authService.issueAccessToken({
       id: req.user.sub,
@@ -65,13 +70,14 @@ export class AuthController {
     });
     res.cookie('access_token', accessToken, {
       ...cookieOptions,
-      maxAge: accessTokenMaxAge,
+      maxAge: accessTokenMaxAgeMilliSeconds,
     });
 
     return res.send();
   }
 
   @Post('logout')
+  @UseGuards(JwtAuthGuard)
   async logout(@UserId() userId: string, @Res() res: Response) {
     await this.authService.clearRefreshToken(userId);
     res.clearCookie(cookieNames.accessTokenCookieName);

@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Author } from 'src/authors/entities/author.entity';
 import { BaseTable } from 'src/common/entities/base-table.entity';
 
@@ -31,4 +32,10 @@ export class Profile extends BaseTable {
   @ManyToMany(() => Author, (author) => author.readers)
   @JoinTable()
   mostReadAuthors: Author[];
+
+  @Exclude()
+  declare updatedAt: Date;
+
+  @Exclude()
+  declare createdAt: Date;
 }
