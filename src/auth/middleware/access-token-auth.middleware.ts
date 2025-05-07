@@ -14,7 +14,6 @@ export class AccessTokenAuthMiddleware implements NestMiddleware {
   ) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
-    console.log('AccessTokenAuthMiddleware use 호출');
     const accessToken = req.cookies[cookieNames.accessTokenCookieName];
     const refreshToken = req.cookies[cookieNames.refreshTokenCookieName];
     if (!accessToken && !refreshToken) return next();
@@ -27,7 +26,6 @@ export class AccessTokenAuthMiddleware implements NestMiddleware {
       });
 
       req.user = payload;
-      console.log('AccessTokenAuthMiddleware use 호출 후 req.user:', req.user);
       next();
     } catch (e) {
       if (e.name === 'TokenExpiredError') {

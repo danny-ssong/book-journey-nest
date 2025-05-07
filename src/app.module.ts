@@ -16,7 +16,7 @@ import { AuthorsModule } from './authors/authors.module';
 import { BooksModule } from './books/books.module';
 import { AccessTokenAuthMiddleware } from './auth/middleware/access-token-auth.middleware';
 import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from './auth/guard/auth.gaurd';
+import { AuthGuard } from './auth/guard/auth.guard';
 
 @Module({
   imports: [

@@ -7,11 +7,18 @@ import { GoogleStrategy } from './strategy/google.strategy';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { UsersModule } from 'src/users/users.module';
 import { JwtRefreshStrategy } from './strategy/jwt-refresh.strategy';
+import { OptionalJwtStrategy } from './strategy/optional-jwt.strategy';
 
 @Module({
   imports: [ConfigModule, JwtModule.register({}), UsersModule],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy, JwtStrategy, JwtRefreshStrategy],
+  providers: [
+    AuthService,
+    GoogleStrategy,
+    JwtStrategy,
+    JwtRefreshStrategy,
+    OptionalJwtStrategy,
+  ],
   exports: [JwtModule],
 })
 export class AuthModule {}
