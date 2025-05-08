@@ -41,7 +41,11 @@ export class PostService {
     const author = await this.getOrCreateAuthor(createPostDto.book.author, qr);
     const book = await this.getOrCreateBook(createPostDto.book, author.id, qr);
     const newPost = await this.createPost(createPostDto, userId, book.isbn, qr);
-    return newPost;
+
+    return qr.manager.findOneOrFail(Post, {
+      where: { id: newPost.id },
+      relations: ['book', 'user', 'user.profile', 'book.author'],
+    });
   }
 
   private async getOrCreateAuthor(name: string, qr: QueryRunner) {

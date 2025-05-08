@@ -114,7 +114,6 @@ describe('Post Service - Integration Test', () => {
         content: `content${id}`,
         rating: 5,
         startDate: new Date(),
-        endDate: new Date(),
       }),
     );
 
@@ -128,7 +127,6 @@ describe('Post Service - Integration Test', () => {
         content: 'content',
         rating: 5,
         startDate: new Date(),
-        endDate: new Date(),
         isPrivate: false,
         book: {
           isbn: '1234567890111',
@@ -162,7 +160,6 @@ describe('Post Service - Integration Test', () => {
           content: '새 내용',
           rating: 4,
           startDate: new Date(),
-          endDate: new Date(),
           isPrivate: false,
           book: {
             isbn: '5534567890111',
@@ -306,7 +303,6 @@ describe('Post Service - Integration Test', () => {
       },
       rating: 5,
       startDate: new Date(),
-      endDate: new Date(),
       isPrivate: false,
     };
     it('should update a post', async () => {
