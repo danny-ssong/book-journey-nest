@@ -1,4 +1,4 @@
-import { Exclude } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import { BaseTable } from 'src/common/entities/base-table.entity';
 import { Post } from 'src/post/entities/post.entity';
 import { Profile } from 'src/profiles/entities/profile.entity';
@@ -54,4 +54,9 @@ export class User extends BaseTable {
 
   @OneToMany(() => Post, (post) => post.user)
   posts: Post[];
+
+  @Expose()
+  get _updatedAt() {
+    return this.updatedAt;
+  }
 }

@@ -68,7 +68,6 @@ export class CommonService {
 
     return { qb, nextCursor };
   }
-
   generateNextCursor<T>(results: T[], order: string[]): string | null {
     if (results.length === 0) return null;
 
@@ -81,16 +80,17 @@ export class CommonService {
      * }
      */
 
-    const lastItme = results[results.length - 1];
+    const lastItem = results[results.length - 1];
 
     const values = {};
 
     order.forEach((columnOrder) => {
       const [column] = columnOrder.split('_');
-      values[column] = lastItme[column];
+      values[column] = lastItem[column];
     });
 
     const cursorObj = { values, order };
+
     const nextCursor = Buffer.from(JSON.stringify(cursorObj)).toString(
       'base64',
     );

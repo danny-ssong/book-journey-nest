@@ -5,7 +5,10 @@ import { UsersService } from 'src/users/users.service';
 import { ConfigService } from '@nestjs/config';
 import { TestBed } from '@automock/jest';
 import { envVariableKeys } from 'src/common/const/env.const';
-import { accessTokenMaxAge, refreshTokenMaxAge } from 'src/common/const/const';
+import {
+  accessTokenMaxAgeMilliSeconds,
+  refreshTokenMaxAgeMilliSeconds,
+} from 'src/common/const/const';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -38,7 +41,7 @@ describe('AuthService', () => {
       );
       expect(jwtService.signAsync).toHaveBeenCalledWith(payload, {
         secret: 'accessTokenSecret',
-        expiresIn: accessTokenMaxAge,
+        expiresIn: accessTokenMaxAgeMilliSeconds / 1000,
       });
       expect(token).toBe('accessToken');
     });
@@ -59,7 +62,7 @@ describe('AuthService', () => {
       );
       expect(jwtService.signAsync).toHaveBeenCalledWith(payload, {
         secret: 'refreshTokenSecret',
-        expiresIn: refreshTokenMaxAge,
+        expiresIn: refreshTokenMaxAgeMilliSeconds / 1000,
       });
       expect(token).toBe('refreshToken');
     });

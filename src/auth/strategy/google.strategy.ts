@@ -22,12 +22,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       callbackURL: configService.get<string>(envVariableKeys.googleCallbackUrl),
       scope: ['email', 'profile'],
     });
-    console.log('GoogleStrategy 생성자 실행');
   }
 
   async validate(accessToken: string, refreshToken: string, profile: Profile) {
-    console.log('GoogleStrategy validate 실행', profile);
-
     const { id, name, emails } = profile;
 
     const user = await this.authService.validateOAuthLogin(

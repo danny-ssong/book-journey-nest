@@ -22,6 +22,9 @@ describe('BooksService', () => {
           {
             isbn: `1234567890 ${isbn13}`,
             title: 'test',
+            authors: ['J.K. 롤링', '하루키'],
+            thumbnail: 'https://example.com/thumbnail.jpg',
+            datetime: '2021-01-01T00:00:00.000Z',
           },
         ],
         meta: {},
@@ -33,7 +36,7 @@ describe('BooksService', () => {
 
       const result = await booksService.findOne(isbn13);
       expect(booksService.searchBooks).toHaveBeenCalledWith({
-        queryString: isbn13,
+        query: isbn13,
         size: 1,
         page: 1,
       });
@@ -41,6 +44,11 @@ describe('BooksService', () => {
       expect(result).toEqual({
         ...searchResult.documents[0],
         isbn: isbn13,
+        author: {
+          name: searchResult.documents[0].authors[0],
+        },
+        thumbnailUrl: searchResult.documents[0].thumbnail,
+        publishedAt: new Date(searchResult.documents[0].datetime),
       });
     });
 
@@ -58,7 +66,7 @@ describe('BooksService', () => {
 
   describe('searchBooks', () => {
     const mockSearchDto = {
-      queryString: '해리포터',
+      query: '해리포터',
       size: 10,
       page: 1,
     };
@@ -66,10 +74,12 @@ describe('BooksService', () => {
     const mockApiResponse = {
       documents: [
         {
-          authors: ['J.K. 롤링'],
+          authors: ['J.K. 롤링', '하루키'],
           contents: '해리포터 시리즈...',
           isbn: '1234567890 9876543210123',
           title: '해리포터와 마법사의 돌',
+          thumbnail: 'https://example.com/thumbnail.jpg',
+          datetime: '2021-01-01T00:00:00.000Z',
           translators: ['김현수'],
         },
       ],
@@ -78,7 +88,7 @@ describe('BooksService', () => {
 
     it('return books searched from kakao api', async () => {
       const url = `${process.env.KAKAO_BASE_URL}/v3/search/book?target=title&query=${encodeURIComponent(
-        mockSearchDto.queryString,
+        mockSearchDto.query,
       )}&size=${mockSearchDto.size}&page=${mockSearchDto.page}`;
 
       global.fetch = jest.fn().mockResolvedValue({
@@ -98,6 +108,11 @@ describe('BooksService', () => {
         documents: mockApiResponse.documents.map((document) => ({
           ...document,
           isbn: document.isbn.split(' ')[1],
+          author: {
+            name: document.authors[0],
+          },
+          thumbnailUrl: document.thumbnail,
+          publishedAt: new Date(document.datetime),
         })),
       });
     });
@@ -108,10 +123,16 @@ describe('BooksService', () => {
           {
             isbn: '1234567890 9876543210123',
             title: '해리포터와 마법사의 돌',
+            authors: ['J.K. 롤링', '하루키'],
+            thumbnail: 'https://example.com/thumbnail.jpg',
+            datetime: '2021-01-01T00:00:00.000Z',
           },
           {
             isbn: '1234567890 9876543210123',
             title: '해리포터와 마법사의 돌',
+            authors: ['J.K. 롤링', '하루키'],
+            thumbnail: 'https://example.com/thumbnail.jpg',
+            datetime: '2021-01-01T00:00:00.000Z',
           },
         ],
         meta: {},

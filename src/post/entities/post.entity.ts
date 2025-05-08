@@ -8,8 +8,9 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   DeleteDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { Exclude } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 
 @Entity()
 export class Post extends BaseTable {
@@ -31,10 +32,6 @@ export class Post extends BaseTable {
   startDate: Date;
 
   @Column()
-  endDate: Date;
-
-  @Column()
-  @Exclude()
   isPrivate: boolean;
 
   @DeleteDateColumn()

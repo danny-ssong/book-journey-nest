@@ -16,7 +16,7 @@ import { AuthorsModule } from './authors/authors.module';
 import { BooksModule } from './books/books.module';
 import { AccessTokenAuthMiddleware } from './auth/middleware/access-token-auth.middleware';
 import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from './auth/guard/auth.gaurd';
+import { AuthGuard } from './auth/guard/auth.guard';
 
 @Module({
   imports: [
@@ -34,6 +34,8 @@ import { AuthGuard } from './auth/guard/auth.gaurd';
         HASH_ROUNDS: Joi.number().required(),
         ACCESS_TOKEN_SECRET: Joi.string().required(),
         REFRESH_TOKEN_SECRET: Joi.string().required(),
+        KAKAO_BASE_URL: Joi.string().required(),
+        KAKAO_API_KEY: Joi.string().required(),
         GOOGLE_CLIENT_ID: Joi.string().required(),
         GOOGLE_CLIENT_SECRET: Joi.string().required(),
         GOOGLE_CALLBACK_URL: Joi.string().required(),
@@ -70,20 +72,23 @@ import { AuthGuard } from './auth/guard/auth.gaurd';
     BooksModule,
   ],
   controllers: [],
-  providers: [{ provide: APP_GUARD, useClass: AuthGuard }],
+  providers: [],
+  // providers: [{ provide: APP_GUARD, useClass: AuthGuard }],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(AccessTokenAuthMiddleware)
-      .exclude(
-        { path: 'auth/google', method: RequestMethod.GET },
-        { path: 'auth/google/callback', method: RequestMethod.GET },
-        { path: 'auth/access-token/refresh', method: RequestMethod.POST },
-        { path: 'books/search', method: RequestMethod.GET },
-        { path: 'books/:isbn', method: RequestMethod.GET },
-        { path: 'posts/book/:isbn', method: RequestMethod.GET },
-      )
-      .forRoutes('*');
-  }
-}
+export class AppModule {}
+// export class AppModule implements NestModule {
+//   configure(consumer: MiddlewareConsumer) {
+//     consumer
+//       .apply(AccessTokenAuthMiddleware)
+//       .exclude(
+//         { path: 'auth/google', method: RequestMethod.GET },
+//         { path: 'auth/google/callback', method: RequestMethod.GET },
+//         { path: 'auth/access-token/refresh', method: RequestMethod.POST },
+//         { path: 'books/search', method: RequestMethod.GET },
+//         { path: 'books/:isbn', method: RequestMethod.GET },
+//         { path: 'posts/book/:isbn', method: RequestMethod.GET },
+//         { path: 'users/:userId', method: RequestMethod.GET },
+//       )
+//       .forRoutes('*');
+//   }
+// }
