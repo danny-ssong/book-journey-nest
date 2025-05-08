@@ -26,6 +26,7 @@ describe('PostService', () => {
       save: jest.fn(),
       update: jest.fn(),
       createQueryBuilder: jest.fn().mockReturnThis(),
+      findOneOrFail: jest.fn(),
     },
   };
 
@@ -79,12 +80,22 @@ describe('PostService', () => {
           isbn: createPostDto.book.isbn,
           title: createPostDto.book.title,
         },
-        user: { id: userId },
       } as Post);
 
       jest.spyOn(postService as any, 'findPostById').mockResolvedValue({
         id: 1,
         ...createPostDto,
+      } as any);
+
+      mockQueryRunner.manager.findOneOrFail = jest.fn().mockResolvedValue({
+        id: 1,
+        title: createPostDto.title,
+        content: createPostDto.content,
+        isPrivate: createPostDto.isPrivate,
+        book: {
+          isbn: createPostDto.book.isbn,
+          title: createPostDto.book.title,
+        },
       } as any);
 
       const result = await postService.create(
@@ -95,7 +106,13 @@ describe('PostService', () => {
 
       expect(result).toEqual({
         id: 1,
-        ...createPostDto,
+        title: createPostDto.title,
+        content: createPostDto.content,
+        isPrivate: createPostDto.isPrivate,
+        book: {
+          isbn: createPostDto.book.isbn,
+          title: createPostDto.book.title,
+        },
       });
     });
     it('should throw NotFoundException if user not found', async () => {
