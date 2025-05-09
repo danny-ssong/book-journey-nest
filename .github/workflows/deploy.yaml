@@ -66,5 +66,5 @@ jobs:
           region: ${{secrets.AWS_REGION}}
           application_name: book-journey-EB
           environment_name: book-journey-EB-env
-          version_label: ${{github.run_id}}
+          version_label: ${{github.run_id}}-${{ github.run_attempt }}
           deployment_package: deploy.zip
