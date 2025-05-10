@@ -18,7 +18,7 @@ import { JwtAuthGuard } from './strategy/jwt.strategy';
 
 export const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'prod' ? true : false,
+  secure: process.env.ENV === 'prod' ? true : false,
   sameSite: 'lax' as 'lax' | 'strict' | 'none',
   path: '/',
 };
