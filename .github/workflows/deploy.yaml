@@ -67,4 +67,4 @@ jobs:
             git pull origin main
             npm i
             npm run build
-            pm2 restart
+            pm2 restart main
