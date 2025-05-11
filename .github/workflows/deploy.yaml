@@ -1,4 +1,4 @@
-name: Deploy to AWS Elastic Beanstalk
+name: Deploy to AWS EC2
 
 on:
   push:
@@ -31,7 +31,7 @@ jobs:
       - name: Set up NodeJS
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install dependencies
         run: npm install
@@ -58,13 +58,16 @@ jobs:
       - name: Generate deployment package
         run: zip -r deploy.zip . -x '*.git*'
 
-      - name: Deploy to EB
-        uses: einaregilsson/beanstalk-deploy@v22
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.6
         with:
-          aws_access_key: ${{secrets.AWS_ACCESS_KEY_ID}}
-          aws_secret_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-          region: ${{secrets.AWS_REGION}}
-          application_name: book-journey-EB
-          environment_name: book-journey-EB-env
-          version_label: ${{github.run_id}}-${{ github.run_attempt }}
-          deployment_package: deploy.zip
+          host: ${{ secrets.EC2_IP }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd /home/ubuntu/book-journey
+            git pull origin main
+            npm i
+            npm run build
+            pm2 restart
