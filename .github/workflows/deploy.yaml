@@ -3,7 +3,7 @@ name: Deploy to AWS EC2
 on:
   push:
     branches:
-      - main
+      - dev
 
 jobs:
   build-and-deploy:
@@ -55,9 +55,6 @@ jobs:
       - name: Run test
         run: npm run test
 
-      - name: Generate deployment package
-        run: zip -r deploy.zip . -x '*.git*'
-
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -66,7 +63,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            cd /home/ubuntu/book-journey
+            cd /home/ubuntu/book-journey-nest
             git pull origin main
             npm i
             npm run build
