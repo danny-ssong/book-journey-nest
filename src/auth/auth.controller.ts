@@ -14,11 +14,14 @@ import { envVariableKeys } from 'src/common/const/env.const';
 import { ApiResponse } from '@nestjs/swagger';
 import { ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from './strategy/jwt.strategy';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 export const cookieOptions = {
   httpOnly: true,
   secure: process.env.ENV === 'prod' ? true : false,
-  sameSite: 'none' as 'lax' | 'strict' | 'none',
+  sameSite:
+    process.env.ENV === 'prod' ? 'none' : ('lax' as 'lax' | 'strict' | 'none'),
   path: '/',
 };
 
