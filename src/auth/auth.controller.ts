@@ -8,7 +8,6 @@ import {
   refreshTokenMaxAgeMilliSeconds,
 } from 'src/common/const/const';
 import { Response } from 'express';
-import { Public } from './decorator/public.decorator';
 import { UserId } from 'src/common/decorator/user-id.decorator';
 import { ConfigService } from '@nestjs/config';
 import { envVariableKeys } from 'src/common/const/env.const';
@@ -19,7 +18,7 @@ import { JwtAuthGuard } from './strategy/jwt.strategy';
 export const cookieOptions = {
   httpOnly: true,
   secure: process.env.ENV === 'prod' ? true : false,
-  sameSite: 'lax' as 'lax' | 'strict' | 'none',
+  sameSite: 'none' as 'lax' | 'strict' | 'none',
   path: '/',
 };
 
