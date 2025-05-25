@@ -122,10 +122,12 @@ describe('AuthController', () => {
       expect(mockRes.clearCookie).toHaveBeenNthCalledWith(
         1,
         cookieNames.accessTokenCookieName,
+        cookieOptions,
       );
       expect(mockRes.clearCookie).toHaveBeenNthCalledWith(
         2,
         cookieNames.refreshTokenCookieName,
+        cookieOptions,
       );
       expect(mockRes.send).toHaveBeenCalled();
     });
