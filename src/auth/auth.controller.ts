@@ -82,8 +82,8 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async logout(@UserId() userId: string, @Res() res: Response) {
     await this.authService.clearRefreshToken(userId);
-    res.clearCookie(cookieNames.accessTokenCookieName);
-    res.clearCookie(cookieNames.refreshTokenCookieName);
+    res.clearCookie(cookieNames.accessTokenCookieName, cookieOptions);
+    res.clearCookie(cookieNames.refreshTokenCookieName, cookieOptions);
     return res.send();
   }
 }
