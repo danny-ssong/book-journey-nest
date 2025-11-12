@@ -155,7 +155,7 @@ describe('PostController', () => {
 
       postService.findPostsByBook = jest.fn().mockResolvedValue(book);
 
-      const result = await postController.findBookPosts(isbn);
+      const result = await postController.findBookWithPosts(isbn);
 
       expect(postService.findPostsByBook).toHaveBeenCalledWith(isbn);
       expect(result).toEqual(book);

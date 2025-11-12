@@ -107,13 +107,8 @@ export class PostService {
     return qr.manager.save(newPost);
   }
 
-  async findPostsByBook(isbn: string): Promise<Book> {
-    const bookWithPosts = await this.findBookWithPosts(isbn);
-
-    if (!bookWithPosts)
-      throw new NotFoundException(`No posts found for book with isbn: ${isbn}`);
-
-    return bookWithPosts;
+  async findPostsByBook(isbn: string): Promise<Book | null> {
+    return this.findBookWithPosts(isbn);
   }
 
   private async findBookWithPosts(isbn: string) {
