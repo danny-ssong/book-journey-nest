@@ -151,9 +151,7 @@ describe('PostService', () => {
       jest
         .spyOn(postService as any, 'findBookWithPosts')
         .mockResolvedValue(null);
-      await expect(postService.findPostsByBook(isbn)).rejects.toThrow(
-        NotFoundException,
-      );
+      expect(await postService.findPostsByBook(isbn)).toBeNull();
     });
   });
 

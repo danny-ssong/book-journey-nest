@@ -7,8 +7,14 @@ import { Book } from 'src/books/entities/book.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Author } from 'src/authors/entities/author.entity';
 import { CommonModule } from 'src/common/common.module';
+import { BooksModule } from 'src/books/books.module';
+
 @Module({
-  imports: [TypeOrmModule.forFeature([Post, Book, User, Author]), CommonModule],
+  imports: [
+    TypeOrmModule.forFeature([Post, Book, User, Author]),
+    CommonModule,
+    BooksModule,
+  ],
   controllers: [PostController],
   providers: [PostService],
 })

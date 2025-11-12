@@ -198,13 +198,11 @@ describe('Post Service - Integration Test', () => {
     it('should return a book with posts', async () => {
       const book = await postService.findPostsByBook('1234567890111');
       expect(book).toBeDefined();
-      expect(book.posts.length).toBeGreaterThanOrEqual(10);
+      expect(book?.posts.length).toBeGreaterThanOrEqual(10);
     });
 
     it('should throw NotFoundException if book isbn is not found', async () => {
-      await expect(
-        postService.findPostsByBook('7734567890110'),
-      ).rejects.toThrow(NotFoundException);
+      expect(await postService.findPostsByBook('7734567890110')).toBeNull();
     });
   });
 

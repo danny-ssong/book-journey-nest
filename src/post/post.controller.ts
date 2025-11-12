@@ -26,11 +26,15 @@ import { Public } from 'src/auth/decorator/public.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { UserId } from 'src/common/decorator/user-id.decorator';
 import { OptionalJwtAuthGuard } from 'src/auth/strategy/optional-jwt.strategy';
+import { BooksService } from 'src/books/books.service';
 
 @Controller('posts')
 @UseInterceptors(ClassSerializerInterceptor)
 export class PostController {
-  constructor(private readonly postService: PostService) {}
+  constructor(
+    private readonly postService: PostService,
+    private readonly booksService: BooksService,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -63,8 +67,16 @@ export class PostController {
   }
 
   @Get('book/:isbn')
-  findBookPosts(@Param('isbn') isbn: string) {
-    return this.postService.findPostsByBook(isbn);
+  async findBookWithPosts(@Param('isbn') isbn: string) {
+    const bookWithPosts = await this.postService.findPostsByBook(isbn);
+    if (bookWithPosts) return bookWithPosts;
+
+    // 포스트를 생성할 때 책도 db에 추가함. 포스트가 등록되지 않은 책은 Kakao API를 통해 책 정보를 조회해서 반환
+    const bookFromApi = await this.booksService.findOne(isbn);
+    return {
+      ...bookFromApi,
+      posts: [],
+    };
   }
 
   @Get(':id')
