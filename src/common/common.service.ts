@@ -43,7 +43,7 @@ export class CommonService {
       );
     }
 
-    // ["startDate_DESC", "id_DESC"]
+    // ["updatedAt_DESC", "id_DESC"]
     for (let i = 0; i < order.length; i++) {
       const [column, direction] = order[i].split('_');
 
