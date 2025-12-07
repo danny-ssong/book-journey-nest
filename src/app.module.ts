@@ -14,9 +14,9 @@ import { ProfilesModule } from './profiles/profiles.module';
 import { PostModule } from './post/post.module';
 import { AuthorsModule } from './authors/authors.module';
 import { BooksModule } from './books/books.module';
-import { AccessTokenAuthMiddleware } from './auth/middleware/access-token-auth.middleware';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/guard/auth.guard';
+import { AutoRefreshAuthMiddleware } from './auth/middleware/auto-refresh-auth.middleware';
 
 @Module({
   imports: [
@@ -72,20 +72,23 @@ import { AuthGuard } from './auth/guard/auth.guard';
     BooksModule,
   ],
   controllers: [],
-  providers: [],
-  // providers: [{ provide: APP_GUARD, useClass: AuthGuard }],
+  providers: [{ provide: APP_GUARD, useClass: AuthGuard }],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(AutoRefreshAuthMiddleware).forRoutes('*');
+  }
+}
+
 // export class AppModule implements NestModule {
 //   configure(consumer: MiddlewareConsumer) {
 //     consumer
-//       .apply(AccessTokenAuthMiddleware)
+//       .apply(AutoRefreshAuthMiddleware)
 //       .exclude(
 //         { path: 'auth/google', method: RequestMethod.GET },
 //         { path: 'auth/google/callback', method: RequestMethod.GET },
 //         { path: 'auth/access-token/refresh', method: RequestMethod.POST },
-//         { path: 'books/search', method: RequestMethod.GET },
-//         { path: 'books/:isbn', method: RequestMethod.GET },
+//         { path: 'books/*', method: RequestMethod.GET },
 //         { path: 'posts/book/:isbn', method: RequestMethod.GET },
 //         { path: 'users/:userId', method: RequestMethod.GET },
 //       )

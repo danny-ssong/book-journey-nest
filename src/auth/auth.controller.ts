@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { GoogleAuthGuard } from './strategy/google.strategy';
-import { JwtRefreshTokenGuard } from './strategy/jwt-refresh.strategy';
 import {
   accessTokenMaxAgeMilliSeconds,
   cookieNames,
@@ -11,10 +10,9 @@ import { Response } from 'express';
 import { UserId } from 'src/common/decorator/user-id.decorator';
 import { ConfigService } from '@nestjs/config';
 import { envVariableKeys } from 'src/common/const/env.const';
-import { ApiResponse } from '@nestjs/swagger';
-import { ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from './strategy/jwt.strategy';
 import * as dotenv from 'dotenv';
+import { Public } from './decorator/public.decorator';
 dotenv.config();
 
 export const cookieOptions = {
@@ -33,10 +31,12 @@ export class AuthController {
   ) {}
 
   @Get('google')
+  @Public()
   @UseGuards(GoogleAuthGuard)
   async googleAuth() {}
 
   @Get('google/callback')
+  @Public()
   @UseGuards(GoogleAuthGuard)
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const { accessToken, refreshToken } = await this.authService.login(
@@ -58,30 +58,9 @@ export class AuthController {
     );
   }
 
-  @Post('access-token/refresh')
-  @UseGuards(JwtRefreshTokenGuard)
-  @ApiOperation({ summary: 'Access Token 갱신' })
-  @ApiResponse({
-    status: 200,
-    description: 'Access Token 갱신 성공',
-  })
-  async refresh(@Req() req, @Res() res: Response) {
-    const accessToken = await this.authService.issueAccessToken({
-      id: req.user.sub,
-      email: req.user.email,
-    });
-    res.cookie('access_token', accessToken, {
-      ...cookieOptions,
-      maxAge: accessTokenMaxAgeMilliSeconds,
-    });
-
-    return res.send();
-  }
-
   @Post('logout')
-  @UseGuards(JwtAuthGuard)
-  async logout(@UserId() userId: string, @Res() res: Response) {
-    await this.authService.clearRefreshToken(userId);
+  @Public()
+  logout(@Res() res: Response) {
     res.clearCookie(cookieNames.accessTokenCookieName, cookieOptions);
     res.clearCookie(cookieNames.refreshTokenCookieName, cookieOptions);
     return res.send();

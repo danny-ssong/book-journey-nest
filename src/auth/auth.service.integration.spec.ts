@@ -125,21 +125,8 @@ describe('Auth Service - Integration Test', () => {
     it('should login', async () => {
       const { accessToken, refreshToken } = await authService.login(users[0]);
 
-      const user = await userRepository.findOne({
-        where: { id: users[0].id },
-      });
-
-      expect(user?.refreshToken).toBe(refreshToken);
-    });
-  });
-
-  describe('clearRefreshToken', () => {
-    it('should be null refresh token in user db', async () => {
-      await authService.clearRefreshToken(users[0].id);
-      const user = await userRepository.findOne({
-        where: { id: users[0].id },
-      });
-      expect(user?.refreshToken).toBeNull();
+      expect(accessToken).toBeDefined();
+      expect(refreshToken).toBeDefined();
     });
   });
 });

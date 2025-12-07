@@ -84,38 +84,6 @@ export class UsersService {
     }`;
   }
 
-  async findUserWithRefreshToken(userId: string, refreshToken: string) {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-    });
-
-    if (!user)
-      throw new NotFoundException(
-        `유저를 찾을 수 없습니다. token에 서명된 user id${userId}`,
-      );
-
-    const isRefreshTokenMatched = user.refreshToken === refreshToken;
-
-    if (!isRefreshTokenMatched)
-      throw new UnauthorizedException(
-        '서명된 토큰과 리프레시 토큰이 일치하지 않습니다.',
-      );
-
-    return user;
-  }
-
-  async saveRefreshToken(userId: string, refreshToken: string) {
-    await this.userRepository.update(userId, {
-      refreshToken,
-    });
-  }
-
-  async clearRefreshToken(userId: string) {
-    await this.userRepository.update(userId, {
-      refreshToken: null,
-    });
-  }
-
   findAll() {
     return this.userRepository.find({ relations: ['profile'] });
   }
