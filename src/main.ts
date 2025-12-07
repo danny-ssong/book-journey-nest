@@ -3,10 +3,11 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { winstonLogger } from './common/logger/winston.logger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    // logger: ['verbose'],
+    logger: winstonLogger,
   });
 
   const config = new DocumentBuilder()
