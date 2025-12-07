@@ -21,24 +21,24 @@ import { QueryRunner as QR } from 'typeorm';
 import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
 import { UserId } from 'src/common/decorator/user-id.decorator';
 import { Public } from 'src/auth/decorator/public.decorator';
-
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
+  @Public()
   findAll() {
     return this.usersService.findAll();
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard)
   getMe(@UserId() userId: string) {
     return this.usersService.findOneWithProfile(userId);
   }
 
   @Get(':id')
+  @Public()
   findOne(@Param('id') id: string) {
     return this.usersService.findOneWithProfile(id);
   }

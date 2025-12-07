@@ -138,68 +138,6 @@ describe('UsersService', () => {
     });
   });
 
-  describe('findUserWithRefreshToken', () => {
-    it('should return user if user exists', async () => {
-      const user = {
-        id: '1',
-        refreshToken: 'refreshToken',
-      } as User;
-
-      userRepository.findOne = jest.fn().mockResolvedValue(user);
-
-      const result = await userService.findUserWithRefreshToken(
-        '1',
-        'refreshToken',
-      );
-
-      expect(userRepository.findOne).toHaveBeenCalledWith({
-        where: { id: user.id },
-      });
-      expect(result).toEqual(user);
-    });
-
-    it('should throw not found exception if user not found', async () => {
-      userRepository.findOne = jest.fn().mockResolvedValue(null);
-
-      await expect(
-        userService.findUserWithRefreshToken('1', 'refreshToken'),
-      ).rejects.toThrow(NotFoundException);
-    });
-
-    it('should throw unauthorized exception if refresh token does not match', async () => {
-      const user = {
-        id: '1',
-        refreshToken: 'refreshToken',
-      } as User;
-
-      userRepository.findOne = jest.fn().mockResolvedValue(user);
-
-      await expect(
-        userService.findUserWithRefreshToken('1', 'wrongRefreshToken'),
-      ).rejects.toThrow(UnauthorizedException);
-    });
-  });
-
-  describe('saveRefreshToken', () => {
-    it('should save refresh token', async () => {
-      await userService.saveRefreshToken('1', 'refreshToken');
-
-      expect(userRepository.update).toHaveBeenCalledWith('1', {
-        refreshToken: 'refreshToken',
-      });
-    });
-  });
-
-  describe('clearRefreshToken', () => {
-    it('should remove refresh token', async () => {
-      await userService.clearRefreshToken('1');
-
-      expect(userRepository.update).toHaveBeenCalledWith('1', {
-        refreshToken: null,
-      });
-    });
-  });
-
   describe('findAll', () => {
     it('should return users', async () => {
       const users = [{ id: '1' }, { id: '2' }] as User[];

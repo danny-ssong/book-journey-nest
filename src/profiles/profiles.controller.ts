@@ -17,7 +17,6 @@ export class ProfilesController {
   constructor(private readonly profilesService: ProfilesService) {}
 
   @Patch('me')
-  @UseGuards(JwtAuthGuard)
   update(@UserId() userId: string, @Body() updateProfileDto: UpdateProfileDto) {
     return this.profilesService.update(userId, updateProfileDto);
   }

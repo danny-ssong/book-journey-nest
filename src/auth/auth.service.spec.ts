@@ -124,22 +124,10 @@ describe('AuthService', () => {
       const result = await authService.login(user);
       expect(authService.issueAccessToken).toHaveBeenCalledWith(user);
       expect(authService.issueRefreshToken).toHaveBeenCalledWith(user);
-      expect(userService.saveRefreshToken).toHaveBeenCalledWith(
-        user.id,
-        'refreshToken',
-      );
       expect(result).toEqual({
         accessToken: 'accessToken',
         refreshToken: 'refreshToken',
       });
-    });
-  });
-
-  describe('clearRefreshToken', () => {
-    it('should clear refresh token', async () => {
-      const userId = '1';
-      await authService.clearRefreshToken(userId);
-      expect(userService.clearRefreshToken).toHaveBeenCalledWith(userId);
     });
   });
 });

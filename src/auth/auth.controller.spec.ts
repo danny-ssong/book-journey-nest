@@ -78,47 +78,14 @@ describe('AuthController', () => {
     });
   });
 
-  describe('refresh', () => {
-    it('should call authService.issueAccessToken and return res accessToken in cookies', async () => {
-      const mockReq = { user: { sub: 1, email: 'test@test.com' } };
-      const mockRes = {
-        cookie: jest.fn().mockReturnThis(),
-        send: jest.fn(),
-      };
-
-      jest
-        .spyOn(authService, 'issueAccessToken')
-        .mockResolvedValue('accessToken');
-
-      await authController.refresh(mockReq, mockRes as unknown as Response);
-
-      expect(authService.issueAccessToken).toHaveBeenCalledWith({
-        id: mockReq.user.sub,
-        email: mockReq.user.email,
-      });
-      expect(mockRes.cookie).toHaveBeenCalledWith(
-        'access_token',
-        'accessToken',
-        {
-          ...cookieOptions,
-          maxAge: accessTokenMaxAgeMilliSeconds,
-        },
-      );
-
-      expect(mockRes.send).toHaveBeenCalled();
-    });
-  });
-
   describe('logout', () => {
-    it('should call authService.clearRefreshToken and clear cookies', async () => {
-      const userId = '1';
+    it('should clear cookies', async () => {
       const mockRes = {
         clearCookie: jest.fn().mockReturnThis(),
         send: jest.fn(),
       };
-      authService.clearRefreshToken = jest.fn().mockResolvedValue(undefined);
-      await authController.logout(userId, mockRes as unknown as Response);
-      expect(authService.clearRefreshToken).toHaveBeenCalledWith(userId);
+      await authController.logout(mockRes as unknown as Response);
+
       expect(mockRes.clearCookie).toHaveBeenNthCalledWith(
         1,
         cookieNames.accessTokenCookieName,

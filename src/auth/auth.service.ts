@@ -63,12 +63,6 @@ export class AuthService {
     const accessToken = await this.issueAccessToken(user);
     const refreshToken = await this.issueRefreshToken(user);
 
-    await this.usersService.saveRefreshToken(user.id, refreshToken);
-
     return { accessToken, refreshToken };
-  }
-
-  async clearRefreshToken(userId: string) {
-    await this.usersService.clearRefreshToken(userId);
   }
 }
