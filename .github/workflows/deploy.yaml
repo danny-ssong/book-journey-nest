@@ -55,6 +55,17 @@ jobs:
       - name: Run test
         run: npm run test
 
+      - name: Copy dist to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          source: 'dist'
+          target: '/home/ubuntu/book-journey-nest/'
+          overwrite: true
+
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -67,5 +78,4 @@ jobs:
             cd /home/ubuntu/book-journey-nest
             git pull origin main
             npm ci --only=production
-            npm run build
             pm2 restart main
