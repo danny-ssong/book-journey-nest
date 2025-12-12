@@ -305,10 +305,14 @@ describe('PostService', () => {
         title: updateDto.book.title,
       } as Book);
 
+      const mockPost = { id, ...updateDto, user: { id: userId } };
+
       jest.spyOn(postService as any, 'updatePost').mockResolvedValue(null);
 
-      jest
-        .spyOn(postService as any, 'getPostById')
+      jest.spyOn(postService as any, 'getPostById').mockResolvedValue(mockPost);
+
+      mockQueryRunner.manager.findOneOrFail = jest
+        .fn()
         .mockResolvedValue({ id, ...updateDto, user: { id: userId } });
 
       const result = await postService.update(
@@ -335,13 +339,15 @@ describe('PostService', () => {
 
       expect((postService as any).updatePost).toHaveBeenCalledWith(
         updateDto,
-        id,
-        userId,
+        mockPost,
         updateDto.book.isbn,
         mockQueryRunner as any,
       );
 
-      expect((postService as any).getPostById).toHaveBeenCalledWith(id);
+      expect(mockQueryRunner.manager.findOneOrFail).toHaveBeenCalledWith(Post, {
+        where: { id },
+        relations: ['book', 'user', 'user.profile', 'book.author'],
+      });
 
       expect(result).toEqual({ id, ...updateDto, user: { id: userId } });
     });
