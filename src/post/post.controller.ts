@@ -25,7 +25,6 @@ import { GetPostsDto } from './dto/get-posts.dto';
 import { Public } from 'src/auth/decorator/public.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { UserId } from 'src/common/decorator/user-id.decorator';
-import { OptionalJwtAuthGuard } from 'src/auth/strategy/optional-jwt.strategy';
 import { BooksService } from 'src/books/books.service';
 
 @Controller('posts')
@@ -82,7 +81,6 @@ export class PostController {
 
   @Get(':id')
   @Public()
-  @UseGuards(OptionalJwtAuthGuard)
   findOne(@UserId() userId: string, @Param('id', ParseIntPipe) id: number) {
     return this.postService.findPostById(userId, id);
   }
