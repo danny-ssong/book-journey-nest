@@ -92,16 +92,20 @@ export class PostService {
 
   private async updatePost(
     updatePostDto: UpdatePostDto,
-    id: number,
-    userId: string,
+    existingPost: Post,
     bookId: string,
     qr: QueryRunner,
   ) {
-    return qr.manager.update(Post, id, {
-      ...updatePostDto,
+    Object.assign(existingPost, {
+      title: updatePostDto.title,
+      content: updatePostDto.content,
+      rating: updatePostDto.rating,
+      startDate: updatePostDto.startDate,
+      isPrivate: updatePostDto.isPrivate,
       book: { isbn: bookId },
-      user: { id: userId },
     });
+
+    return await qr.manager.save(Post, existingPost);
   }
 
   private async createPost(
@@ -238,20 +242,16 @@ export class PostService {
     const author = await this.getOrCreateAuthor(updatePostDto.book.author, qr);
     const book = await this.getOrCreateBook(updatePostDto.book, author.id, qr);
 
-    await this.updatePost(updatePostDto, id, userId, book.isbn, qr);
+    await this.updatePost(updatePostDto, existingPost, book.isbn, qr);
 
-    const updatedPost = await this.getPostById(id);
-    if (!updatedPost) {
-      this.logger.error(`[update] Failed to retrieve updated post: ${id}`);
-      throw new InternalServerErrorException('post not found something wrong');
-    }
+    const updatedPost = await qr.manager.findOneOrFail(Post, {
+      where: { id },
+      relations: ['book', 'user', 'user.profile', 'book.author'],
+    });
 
-    this.logger.log(`[update] PostId: ${id}, UserId: ${userId}`);
-
-    this.logger.verbose(
+    this.logger.log(
       `[update] PostId: ${id}, UserId: ${userId}\n` +
-        `Before: title="${existingPost.title}", rating=${existingPost.rating}, private=${existingPost.isPrivate}\n` +
-        `After: title="${updatedPost.title}", rating=${updatedPost.rating}, private=${updatedPost.isPrivate}`,
+        `title="${updatedPost.title}" | rating="${updatedPost.rating}" | private="${updatedPost.isPrivate}" | content="${updatedPost.content}" | version=${updatedPost.version}`,
     );
 
     return updatedPost;
