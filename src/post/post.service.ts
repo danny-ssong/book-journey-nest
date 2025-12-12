@@ -34,15 +34,14 @@ export class PostService {
   ) {}
 
   async create(userId: string, createPostDto: CreatePostDto, qr: QueryRunner) {
-    this.logger.verbose(
-      `[create] User ${userId} attempting to create post. Payload: ${JSON.stringify(createPostDto)}`,
-    );
-
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
 
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) {
+      this.logger.warn(`[create] User not found: ${userId}`);
+      throw new NotFoundException('User not found');
+    }
 
     const author = await this.getOrCreateAuthor(createPostDto.book.author, qr);
     const book = await this.getOrCreateBook(createPostDto.book, author.id, qr);
@@ -120,19 +119,7 @@ export class PostService {
   }
 
   async findPostsByBook(isbn: string): Promise<Book | null> {
-    this.logger.verbose(
-      `[findPostsByBook] Fetching posts for book ISBN: ${isbn}`,
-    );
     const result = await this.findBookWithPosts(isbn);
-
-    if (result) {
-      this.logger.log(
-        `[findPostsByBook] Found book ${isbn} with ${result.posts?.length || 0} posts`,
-      );
-    } else {
-      this.logger.log(`[findPostsByBook] Book ${isbn} not found in database`);
-    }
-
     return result;
   }
 
@@ -153,10 +140,6 @@ export class PostService {
     getPostsDto: GetPostsDto,
     isOwn: boolean = false,
   ) {
-    this.logger.verbose(
-      `[findPostsByUser] Fetching posts for user ${userId}. IsOwn: ${isOwn}, Params: ${JSON.stringify(getPostsDto)}`,
-    );
-
     const qb = this.getPostsQuerybuilder().where('post.user.id = :userId', {
       userId,
     });
@@ -168,10 +151,6 @@ export class PostService {
       await this.commonService.applyCursorPaginationParamsToQb(qb, getPostsDto);
 
     const [data, count] = await qb.getManyAndCount();
-
-    this.logger.log(
-      `[findPostsByUser] Retrieved ${count} posts for user ${userId}`,
-    );
 
     return {
       data,
@@ -199,8 +178,6 @@ export class PostService {
 
     const [data, count] = await qb.getManyAndCount();
 
-    this.logger.log(`[findAll] Retrieved ${count} public posts`);
-
     return {
       data,
       nextCursor,
@@ -213,22 +190,19 @@ export class PostService {
   }
 
   async findPostById(userId: string, id: number) {
-    this.logger.verbose(
-      `[findPostById] post ${id} is requested byUser ${userId} `,
-    );
-
     const post = await this.getPostById(id);
 
-    if (!post) throw new NotFoundException('post not found');
+    if (!post) {
+      this.logger.warn(`[findPostById] Post not found: ${id}`);
+      throw new NotFoundException('post not found');
+    }
 
     if (post.isPrivate && post.user.id !== userId) {
       this.logger.warn(
-        `[findPostById] User ${userId} attempted to access private post ${id} owned by ${post.user.id}`,
+        `[findPostById] Forbidden access: User ${userId} → Post ${id} (owner: ${post.user.id})`,
       );
       throw new ForbiddenException();
     }
-
-    this.logger.log(`[findPostById] Post ${id} retrieved by user ${userId}`);
 
     return post;
   }
@@ -239,22 +213,24 @@ export class PostService {
     updatePostDto: UpdatePostDto,
     qr: QueryRunner,
   ) {
-    this.logger.verbose(
-      `[update] User ${userId} attempting to update post ${id}. Payload: ${JSON.stringify(updatePostDto)}`,
-    );
-
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
-    if (!user) throw new NotFoundException('user not found');
+    if (!user) {
+      this.logger.warn(`[update] User not found: ${userId}`);
+      throw new NotFoundException('user not found');
+    }
 
     const existingPost = await this.getPostById(id);
 
-    if (!existingPost) throw new NotFoundException('post not found');
+    if (!existingPost) {
+      this.logger.warn(`[update] Post not found: ${id}`);
+      throw new NotFoundException('post not found');
+    }
 
     if (existingPost.user.id !== userId) {
       this.logger.warn(
-        `[update] User ${userId} attempted to update post ${id} without permission`,
+        `[update] Unauthorized update attempt: User ${userId} → Post ${id}`,
       );
       throw new ForbiddenException('user is not owner');
     }
@@ -265,24 +241,31 @@ export class PostService {
     await this.updatePost(updatePostDto, id, userId, book.isbn, qr);
 
     const updatedPost = await this.getPostById(id);
-    if (!updatedPost)
+    if (!updatedPost) {
+      this.logger.error(`[update] Failed to retrieve updated post: ${id}`);
       throw new InternalServerErrorException('post not found something wrong');
+    }
 
-    this.logger.log(
-      `[update] Post ${id} updated successfully by user ${userId}`,
+    this.logger.log(`[update] PostId: ${id}, UserId: ${userId}`);
+
+    this.logger.verbose(
+      `[update] PostId: ${id}, UserId: ${userId}\n` +
+        `Before: title="${existingPost.title}", rating=${existingPost.rating}, private=${existingPost.isPrivate}\n` +
+        `After: title="${updatedPost.title}", rating=${updatedPost.rating}, private=${updatedPost.isPrivate}`,
     );
 
     return updatedPost;
   }
 
   async remove(id: number) {
-    this.logger.verbose(`[remove] Attempting to remove post ${id}`);
-
     const post = await this.postRepository.findOne({ where: { id } });
-    if (!post) throw new NotFoundException('post not found');
+    if (!post) {
+      this.logger.warn(`[remove] Post not found: ${id}`);
+      throw new NotFoundException('post not found');
+    }
     await this.postRepository.softDelete(id);
 
-    this.logger.log(`[remove] Post ${id} soft deleted successfully`);
+    this.logger.log(`[remove] PostId: ${id}`);
 
     return { id };
   }
