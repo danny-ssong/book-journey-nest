@@ -60,6 +60,8 @@ export class AutoRefreshAuthMiddleware implements NestMiddleware {
           email: payload.email,
         });
 
+        req.cookies[cookieNames.accessTokenCookieName] = newAccessToken;
+
         // 쿠키에 새로운 access token 저장
         res.cookie('access_token', newAccessToken, {
           ...cookieOptions,
