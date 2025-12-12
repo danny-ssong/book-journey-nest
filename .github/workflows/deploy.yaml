@@ -63,6 +63,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           script: |
+            set -e
             cd /home/ubuntu/book-journey-nest
             git pull origin main
             npm ci --only=production
