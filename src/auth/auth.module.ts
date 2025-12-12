@@ -6,12 +6,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { GoogleStrategy } from './strategy/google.strategy';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { UsersModule } from 'src/users/users.module';
-import { OptionalJwtStrategy } from './strategy/optional-jwt.strategy';
 
 @Module({
   imports: [ConfigModule, JwtModule.register({}), UsersModule],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy, JwtStrategy, OptionalJwtStrategy],
+  providers: [AuthService, GoogleStrategy, JwtStrategy],
   exports: [JwtModule, AuthService],
 })
 export class AuthModule {}

@@ -6,5 +6,5 @@ export const cookieNames = {
   refreshTokenCookieName,
 };
 
-export const accessTokenMaxAgeMilliSeconds = 5 * 60 * 1000;
+export const accessTokenMaxAgeMilliSeconds = 15 * 60 * 1000;
 export const refreshTokenMaxAgeMilliSeconds = 12 * 30 * 24 * 60 * 1000;
