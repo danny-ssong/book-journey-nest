@@ -9,8 +9,7 @@ const logDir = 'logs';
 
 // 파일용 포맷 (컨텍스트 포함)
 const fileFormat = winston.format.combine(
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-  winston.format.ms(),
+  winston.format.timestamp({ format: () => getKoreanTime() }),
   winston.format.printf((info) => {
     const timestamp = typeof info.timestamp === 'string' ? info.timestamp : '';
     const level =
@@ -54,8 +53,7 @@ export const winstonLogger = WinstonModule.createLogger({
     new winston.transports.Console({
       level: isProduction ? 'log' : 'verbose',
       format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.ms(),
+        winston.format.timestamp({ format: () => getKoreanTime() }),
         nestWinstonModuleUtilities.format.nestLike('BookJourney', {
           colors: true,
           prettyPrint: true,
@@ -66,3 +64,17 @@ export const winstonLogger = WinstonModule.createLogger({
     errorRotateFileTransport,
   ],
 });
+
+const getKoreanTime = () => {
+  const koreanTime = new Date().toLocaleString('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+  return koreanTime.replace(/\. /g, '-').replace(/\.$/, '');
+};

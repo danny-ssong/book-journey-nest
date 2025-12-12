@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { winstonLogger } from './common/logger/winston.logger';
+import { LoggingInterceptor } from './common/interceptor/loggin.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -38,6 +39,7 @@ async function bootstrap() {
     credentials: true,
   });
 
+  app.useGlobalInterceptors(new LoggingInterceptor());
   app.use(cookieParser());
   await app.listen(process.env.PORT ?? 3000);
 }
