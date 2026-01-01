@@ -13,6 +13,16 @@ export class CommonService {
   ) {
     let { cursor, take, order } = dto;
 
+    // id 정렬이 없으면 자동으로 id_DESC 추가
+    const hasIdOrder = order.some((o) => {
+      const [column] = o.split('_');
+      return column === 'id';
+    });
+
+    if (!hasIdOrder) {
+      order = [...order, 'id_DESC'];
+    }
+
     if (cursor) {
       const decodedCursor = Buffer.from(cursor, 'base64').toString('utf-8');
 
